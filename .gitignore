@@ -1,0 +1,19 @@
+# Jekyll
+_site/
+.jekyll-cache/
+.sass-cache/
+.bundle/
+vendor/
+
+# Bundler
+Gemfile.lock
+
+# Operating System Files
+**/.DS_Store
+Thumbs.db
+
+# Editor/IDE Specific Files
+.idea/
+.vscode/
+*.swp
+*~

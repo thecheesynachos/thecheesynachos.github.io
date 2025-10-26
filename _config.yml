@@ -1,0 +1,45 @@
+# Site settings
+title: Kaotoo's Space
+title_short: Kaotoo's Space
+# nickname: Kaotoo
+# general_email: apivich dot hem at gmail dot com
+
+#description: > # this means to ignore newlines until "baseurl:" 
+
+baseurl: "" # the subpath of your site, e.g. /blog/
+
+# url: "https://thecheesynachos.github.io" # the base hostname & protocol for your site
+
+# github_username: apivich-h
+# linkedin_username: apivich-h
+# twitter_username: apivich_h
+# facebook_username: facebook_username
+# feel free to add other links here; you will have to add the SVG icon in _layouts/footer.html
+
+# Build settings
+markdown: kramdown
+
+kramdown:
+  math_engine: mathjax
+
+# Other options
+permalink: vignettes/:title
+
+plugins:
+  - jekyll-redirect-from
+  - jekyll-loading-lazy
+#   - jekyll-last-modified-at
+#
+# # Optional. The default date format, used if none is specified in the tag.
+# last-modified-at:
+#     date-format: '%d %B %Y'
+
+whitelist:
+  - jekyll-redirect-from
+
+
+defaults:
+  - scope:
+      path: "assets/gallery"
+    values:
+      gallery_image: true
