@@ -14,7 +14,7 @@ import exifread
 # --- Configuration ---
 # Set the JPEG compression quality (0-100). 
 # 85 is usually a good balance between file size reduction and visual quality.
-COMPRESSION_QUALITY = 50 
+COMPRESSION_QUALITY = 100 
 
 # --- Core Function to Process a Single Image ---
 
@@ -79,17 +79,20 @@ def rename_compress_and_convert_image(filepath, destination_dir):
             print(f"  - Warning: No EXIF date found for {original_filename}. Using modification date: {formatted_date}")
 
 
-        # 2. Prepare the new filename (ALWAYS .jpg extension)
-        new_filename_base = formatted_date
-        # --- KEY CHANGE: Use .jpg extension for output ---
-        new_filepath = os.path.join(destination_dir, new_filename_base + ".jpg") 
+        # # 2. Prepare the new filename (ALWAYS .jpg extension)
+        # new_filename_base = formatted_date
+        # # --- KEY CHANGE: Use .jpg extension for output ---
+        # new_filepath = os.path.join(destination_dir, new_filename_base + ".jpg") 
         
         # 3. Handle potential filename collisions (add sequential number)
         counter = 1
-        while os.path.exists(new_filepath):
+        while True:
             new_filename_base = f"{formatted_date}_{counter}"
             new_filepath = os.path.join(destination_dir, new_filename_base + ".jpg")
-            counter += 1
+            if os.path.exists(new_filepath):
+                counter += 1
+            else:
+                break
 
         # 4. Save (Convert, Compress, and Rename) the file to the new location
         
