@@ -14,7 +14,7 @@ import exifread
 # --- Configuration ---
 # Set the JPEG compression quality (0-100). 
 # 85 is usually a good balance between file size reduction and visual quality.
-COMPRESSION_QUALITY = 100 
+COMPRESSION_QUALITY = 80 
 
 # --- Core Function to Process a Single Image ---
 
