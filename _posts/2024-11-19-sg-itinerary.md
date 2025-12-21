@@ -4,7 +4,6 @@ title: Singapore Itinerary
 date: 2024-11-19
 ---
 
-
 Saturday
 - Afternoon: Jewel, maybe dinner
 - Night: maybe Orchard to see lights
