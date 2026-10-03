@@ -1,0 +1,87 @@
+---
+layout: page
+title: City Pin
+permalink: /random/map_game/
+sitemap: false
+---
+<!--
+  City Pin — a self-contained city-guessing game. Everything it needs lives in this
+  folder and loads from this site; there are no external requests and no API calls.
+
+    citypin.css      styles (all scoped to #citypin)
+    text.js          every word the game shows — edit copy there, not here
+    data-map.js      encoded Natural Earth country outlines
+    data-cities.js   encoded GeoNames city pool
+    citypin.js       game logic
+
+  The sibling files have no front matter, so Jekyll copies them verbatim to
+  /pages/random/map_game/ — hence the absolute paths below rather than relative ones
+  (this page itself is served from /random/map_game/ via the permalink above).
+  If you move this folder, update the four paths and the permalink together.
+-->
+{% assign cp = "/pages/random/map_game" | prepend: site.baseurl %}
+<link rel="stylesheet" href="{{ cp }}/citypin.css">
+
+<div id="citypin">
+
+<div id="bar">
+  <div id="prompt">
+    <div class="lbl" data-txt="ui.findThisCity"></div>
+    <div id="city"></div>
+  </div>
+  <div class="stat"><div class="v" id="roundN"></div><div class="k" data-txt="ui.roundLabel"></div></div>
+  <div class="stat"><div class="v" id="scoreN">0</div><div class="k" data-txt="ui.scoreLabel"></div></div>
+  <button id="fsBtn" data-txt="ui.fullscreen" data-attr="title">&#9974;</button>
+</div>
+
+<div id="wrap">
+  <canvas id="map"></canvas>
+  <div id="zoombtns">
+    <button id="zin" data-txt="ui.zoomIn" data-attr="title">+</button>
+    <button id="zout" data-txt="ui.zoomOut" data-attr="title">−</button>
+    <button id="zres" data-txt="ui.resetView" data-attr="title" style="font-size:13px">⤢</button>
+  </div>
+  <div id="hint"></div>
+
+  <!-- start -->
+  <div class="screen" id="startScreen">
+    <div class="card">
+      <h1 data-txt="start.title"></h1>
+      <p data-txt="start.blurb"></p>
+      <div class="optlbl" data-txt="start.poolLabel"></div>
+      <div class="opts" id="diffOpts"></div>
+      <div class="optlbl" data-txt="start.mapLabel"></div>
+      <div class="opts" id="bordOpts"></div>
+      <button class="primary" id="playBtn" data-txt="start.play" style="width:100%;padding:12px"></button>
+      <div class="foot-note" data-txt="start.credits" data-html></div>
+    </div>
+  </div>
+
+  <!-- final -->
+  <div class="screen hidden" id="endScreen">
+    <div class="card">
+      <h2 data-txt="end.title"></h2>
+      <div class="total"><b id="endTotal">0</b> <span data-txt="end.outOf"></span></div>
+      <p id="endMsg" style="margin-top:10px"></p>
+      <table><thead><tr id="endHead"></tr></thead>
+        <tbody id="endRows"></tbody></table>
+      <div style="display:flex;gap:8px">
+        <button class="primary" id="againBtn" data-txt="end.playAgain" style="flex:1;padding:11px"></button>
+        <button id="changeBtn" data-txt="end.changeDifficulty" style="flex:1;padding:11px"></button>
+      </div>
+      <div class="foot-note" id="bestNote"></div>
+    </div>
+  </div>
+</div>
+
+<div id="foot">
+  <div id="verdict"></div>
+  <button id="actionBtn" class="primary" disabled></button>
+</div>
+
+</div>
+
+<script src="{{ cp }}/text.js" defer></script>
+<script src="{{ cp }}/data-map.js" defer></script>
+<script src="{{ cp }}/data-cities.js" defer></script>
+<script src="{{ cp }}/citypin.js" defer></script>

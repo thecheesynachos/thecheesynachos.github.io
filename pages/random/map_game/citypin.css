@@ -1,0 +1,86 @@
+/* City Pin — all styles are scoped to #citypin so nothing leaks into the host page. */
+  /* everything is scoped to #citypin so none of this leaks into the site */
+  #citypin{
+    --bg:#0d1117; --panel:#161c25; --panel2:#1e2632; --line:#2c3644;
+    --ink:#e7edf5; --dim:#93a1b5; --accent:#f0b429; --good:#3ddc97; --bad:#ff6b6b;
+    --ocean:#101b28; --land:#2f4256; --border:#4a6379; --void:#070a0e;
+    position:relative;display:flex;flex-direction:column;
+    height:min(92vh,1000px);min-height:560px;
+    background:var(--bg);color:var(--ink);
+    border:1px solid #cfd6de;border-radius:12px;overflow:hidden;
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-weight:400;-webkit-tap-highlight-color:transparent;user-select:none}
+  #citypin.full{position:fixed;inset:0;z-index:9999;height:auto;min-height:0;border-radius:0;border:0}
+  #citypin *{box-sizing:border-box}
+  #citypin button{font:inherit;font-weight:400;color:var(--ink);background:var(--panel2);
+    border:1px solid var(--line);border-radius:8px;padding:8px 16px;cursor:pointer;margin:0;
+    transition:background .12s,border-color .12s}
+  #citypin button:hover:not(:disabled){background:#28323f;border-color:#3d4a5c}
+  #citypin button:disabled{opacity:.4;cursor:default}
+  #citypin button.primary{background:var(--accent);border-color:var(--accent);color:#1a1207;font-weight:600}
+  #citypin button.primary:hover:not(:disabled){background:#ffc643;border-color:#ffc643}
+
+  #citypin #bar{display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--panel);
+    border-bottom:1px solid var(--line);flex-wrap:wrap;flex:none}
+  #citypin #prompt{flex:1;min-width:170px}
+  #citypin #prompt .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #citypin #city{font-size:22px;font-weight:700;line-height:1.3;color:var(--ink);
+    font-family:inherit;letter-spacing:0;margin:0}
+  #citypin #city small{font-weight:400;font-size:14px;color:var(--dim);display:block;line-height:1.3}
+  #citypin .stat{text-align:right;min-width:58px}
+  #citypin .stat .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+  #citypin .stat .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  #citypin #fsBtn{padding:6px 10px;font-size:15px;line-height:1}
+
+  #citypin #wrap{position:relative;flex:1;min-height:0}
+  #citypin #map{position:absolute;inset:0;width:100%;height:100%;display:block;
+    touch-action:none;cursor:crosshair}
+  #citypin #map.panning{cursor:grabbing}
+  #citypin #zoombtns{position:absolute;left:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+  #citypin #zoombtns button{width:34px;height:34px;padding:0;font-size:17px;line-height:1;
+    background:rgba(22,28,37,.9)}
+  #citypin #hint{position:absolute;left:50%;top:12px;transform:translateX(-50%);pointer-events:none;
+    background:rgba(13,17,23,.88);border:1px solid var(--line);border-radius:20px;
+    padding:5px 14px;font-size:12.5px;color:var(--dim);white-space:nowrap;opacity:0;transition:opacity .3s}
+
+  #citypin #foot{padding:10px 14px;background:var(--panel);border-top:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:56px;flex:none}
+  #citypin #verdict{flex:1;min-width:190px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  #citypin #verdict .pts{font-size:20px;font-weight:700;color:var(--accent)}
+  #citypin #verdict .dist{color:var(--dim)}
+  #citypin #verdict .rate{font-weight:600}
+
+  #citypin .screen{position:absolute;inset:0;z-index:10;display:flex;align-items:center;
+    justify-content:center;padding:18px;background:rgba(8,11,16,.9);overflow:auto}
+  #citypin .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:24px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+  #citypin .card h1,#citypin .card h2{font-family:inherit;color:var(--ink);letter-spacing:-.01em;
+    line-height:1.2;margin:0 0 10px;font-weight:700}
+  #citypin .card h1{font-size:26px}
+  #citypin .card h2{font-size:21px}
+  #citypin .card p{color:var(--dim);margin:0 0 16px;font-size:14px}
+  #citypin .optlbl{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--dim);margin:0 0 6px}
+  #citypin .opts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  #citypin .opts button{flex:1;min-width:118px;text-align:left;padding:10px 12px}
+  #citypin .opts button.sel{border-color:var(--accent);background:#2a2415}
+  #citypin .opts b{display:block;font-size:14px}
+  #citypin .opts span{font-size:11.5px;color:var(--dim)}
+  #citypin .total{font-size:42px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  #citypin .total b{font-weight:800}
+  #citypin .total span{font-size:17px;font-weight:500;color:var(--dim)}
+  #citypin table{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;
+    background:none;border:0;color:var(--ink)}
+  #citypin th,#citypin td{padding:5px 6px;text-align:left;border:0;
+    border-bottom:1px solid var(--line);background:none}
+  #citypin th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:500}
+  #citypin td.n{text-align:right;font-variant-numeric:tabular-nums}
+  #citypin .foot-note{font-size:11.5px;color:#6b7a8d;margin-top:14px;line-height:1.5}
+  #citypin .foot-note a{color:#8fa3ba;text-decoration:underline}
+  #citypin .hidden{display:none!important}
+  @media (max-width:520px){
+    #citypin{height:min(92vh,820px)}
+    #citypin #city{font-size:18px}
+    #citypin .card{padding:18px}
+    #citypin #bar,#citypin #foot{padding:8px 10px;gap:10px}
+  }

@@ -4,7 +4,7 @@ title: Thailand 3, Singapore 1
 date: 2024-06-12
 ---
 
-Final game of the Asian World Cup Qualifiers second round. Thailand needs to win by a three goal margin to go through to the next round. 
+Final game of the Asian World Cup Qualifiers second round. Thailand needs to win by a three goal margin to go through to the next round.
 
 I was in my room, nervously pacing around while watching my computer screen. We needed three goals. We needed a miracle. But more unlikely results have occurred before. 
 
