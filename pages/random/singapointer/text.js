@@ -106,10 +106,10 @@ window.SINGAPOINTING_TEXT = {
   // guess is inside wins. `tone` picks the colour: great, good, ok or bad.
   ratings: [
     { within: 0.1, word: "BOSH!", tone: "great" },
-    { within: 0.5, word: "Very close", tone: "great" },
-    { within: 1.5, word: "Close", tone: "great" },
-    { within: 4, word: "Getting there", tone: "good" },
-    { within: 8, word: "Eh close enough", tone: "ok" },
+    { within: 0.5, word: "very close", tone: "great" },
+    { within: 1.5, word: "close", tone: "great" },
+    { within: 4, word: "getting there", tone: "good" },
+    { within: 8, word: "eh close enough", tone: "ok" },
     { within: 15, word: "lmao", tone: "bad" },
     { within: Infinity, word: "????", tone: "bad" },
   ],
@@ -134,12 +134,12 @@ window.SINGAPOINTING_TEXT = {
 
   // Title for the whole game, by share of the maximum score (0.9 = 90%).
   grades: [
-    { atLeast: 0.9, word: "What a pro." },
+    { atLeast: 0.9, word: "What a pro!" },
     { atLeast: 0.7, word: "Very nice." },
     { atLeast: 0.5, word: "Nice." },
     { atLeast: 0.3, word: "Not bad." },
     { atLeast: 0.1, word: "Eh." },
-    { atLeast: 0, word: "You tried." },
+    { atLeast: 0, word: "Did you even try?" },
   ],
 
   // --- "leave this game?" card, from the Home button mid-game ---
