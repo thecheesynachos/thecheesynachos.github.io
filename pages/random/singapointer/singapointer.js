@@ -285,7 +285,6 @@ function startClocks(round) {
     peekId = setTimeout(function () {
       if (G.phase !== "guessing" || G.i !== round) return;
       $("sp-frame").classList.add("sp-covered");
-      show($("sp-lightbox"), false);
     }, PEEK_SECONDS * 1000);
   }
 }
@@ -484,15 +483,6 @@ $("sp-help-btn").onclick = openHelp;
 $("sp-help-close").onclick = function () { show($("sp-help"), false); };
 $("sp-help").onclick = function (e) { if (e.target === this) show(this, false); };
 
-function openLightbox() {
-  if (G.phase === "title" || !$("sp-photo").getAttribute("src")) return;
-  if ($("sp-frame").classList.contains("sp-covered")) return;   // quick look: no peeking
-  $("sp-lightbox-img").src = $("sp-photo").src;
-  show($("sp-lightbox"), true);
-}
-$("sp-photo").onclick = openLightbox;
-$("sp-enlarge").onclick = openLightbox;
-$("sp-lightbox").onclick = function () { show(this, false); };
 
 /* ---------- fullscreen ---------- */
 // Real browser fullscreen where available; otherwise (e.g. iPhone Safari) the game just
@@ -529,14 +519,13 @@ document.addEventListener("keydown", function (e) {
   const t = e.target;
   if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
   if (e.key === "Escape") {
-    if (isOpen("sp-lightbox")) show($("sp-lightbox"), false);
-    else if (isOpen("sp-help")) show($("sp-help"), false);
+    if (isOpen("sp-help")) show($("sp-help"), false);
     else if (isOpen("sp-leave")) show($("sp-leave"), false);
     else if (isFull()) toggleFull();
     return;
   }
   if (e.key !== " " && e.key !== "Enter") return;
-  if (isOpen("sp-help") || isOpen("sp-lightbox") || isOpen("sp-leave")) return;
+  if (isOpen("sp-help") || isOpen("sp-leave")) return;
   if (t && t.tagName === "BUTTON" && box.contains(t)) return;   // let a focused button do its own click
   // only take over Space/Enter while the game is on screen
   const r = box.getBoundingClientRect();

@@ -43,10 +43,10 @@ window.SINGAPOINTING_TEXT = {
     mapPlain: "No names",
     mapOutline: "Outline",
     // the line under the toggles describing what's switched on (html)
-    descNone: "Chilling looking at photos and stuff",
-    descTimer: "{seconds}s per photo",
-    descPeek: "photo hides after {peek}s",
-    descPlain: "no street names",
+    descNone: "the chill mode",
+    descTimer: "{seconds} seconds per photo",
+    descPeek: "photo only shown for {peek} seconds",
+    descPlain: "where the streets have no name",
     descOutline: "just the terrain map",
   },
   timer: {
@@ -70,9 +70,7 @@ window.SINGAPOINTING_TEXT = {
   photo: {
     badge: "Photo {n}/{rounds}",
     alt: "Where in Singapore was this taken?",
-    enlarge: "Enlarge photo",
     hidden: "Photo hidden",
-    closeEnlarged: "Click to close",
   },
   info: {
     round: "Photo {n} of {rounds}",
@@ -83,7 +81,7 @@ window.SINGAPOINTING_TEXT = {
     tipEnd: "Final score: <b>{total}</b>",                           // (html)
     reviewRound: "Your game",
     tipReview: "<b>Flags</b> are answers, <b>pins</b> are your guesses.", // (html)
-    keys: "<span><kbd>Space</kbd> guess / next</span><span><kbd>Scroll</kbd> zoom</span><span>click photo to enlarge</span>", // (html)
+    keys: "<span><kbd>Space</kbd> guess / next</span><span><kbd>Scroll</kbd> zoom map</span>", // (html)
   },
 
   // --- buttons on the map ---

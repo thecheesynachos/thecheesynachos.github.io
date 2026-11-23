@@ -79,14 +79,11 @@
 #singapointer .sp-frame{position:relative;width:100%;aspect-ratio:1/1;
   border:3px solid var(--sp-ink);border-radius:10px;overflow:hidden;background:var(--sp-night);
   box-shadow:0 4px 0 var(--sp-ink)}
-#singapointer #sp-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;cursor:zoom-in;
+#singapointer #sp-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   opacity:0;transition:opacity .25s}
 #singapointer #sp-photo.sp-in{opacity:1}
 #singapointer .sp-badge{position:absolute;left:10px;top:10px;font-family:var(--sp-pixel);font-size:12px;
   letter-spacing:.06em;background:var(--sp-ink);color:#fff;padding:5px 8px;border-radius:5px;pointer-events:none}
-#singapointer .sp-enlarge{position:absolute;right:10px;bottom:10px;width:36px;height:36px;padding:0;
-  border:2px solid var(--sp-ink);border-radius:7px;background:rgba(255,255,255,.9);font-size:18px;line-height:1}
-#singapointer .sp-enlarge:hover{background:#fff}
 #singapointer .sp-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;
   pointer-events:none}
 #singapointer .sp-loading span{width:10px;height:10px;background:#fff;animation:sp-blink 1s steps(2) infinite}
@@ -167,7 +164,7 @@
 
 /* title-screen challenge toggles */
 #singapointer .sp-opts{margin-top:20px;padding:12px 16px 10px;background:rgba(23,26,63,.78);border:2px solid rgba(255,255,255,.55);
-  border-radius:10px;max-width:440px;width:100%}
+  border-radius:10px;max-width:660px;width:100%}
 #singapointer .sp-opts-h{font-family:var(--sp-pixel);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#ffd27a;margin-bottom:8px}
 #singapointer .sp-opts-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:8px}
 #singapointer .sp-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border:2px solid #fff;border-radius:7px;
@@ -204,7 +201,7 @@
 #singapointer .sp-cover span{font-family:var(--sp-pixel);font-size:16px;color:#fff;background:var(--sp-ink);padding:8px 12px;
   border:2px solid #fff;border-radius:6px}
 #singapointer .sp-frame.sp-covered .sp-cover{display:flex}
-#singapointer .sp-frame.sp-covered .sp-enlarge,#singapointer .sp-frame.sp-covered #sp-photo{visibility:hidden}
+#singapointer .sp-frame.sp-covered #sp-photo{visibility:hidden}
 
 #singapointer .sp-modes{font-family:var(--sp-pixel);font-size:11px;letter-spacing:.06em;color:var(--sp-red-d);margin-top:4px;min-height:0}
 #singapointer .sp-modes:empty{display:none}
@@ -249,12 +246,6 @@
 #singapointer .sp-review-back{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:600}
 #singapointer .sp-review-back:hover:not(:disabled){transform:translate(-50%,-1px)}
 #singapointer .sp-review-back:active:not(:disabled){transform:translate(-50%,3px)}
-
-/* ---------- enlarged photo ---------- */
-#singapointer .sp-lightbox{position:absolute;inset:0;z-index:1200;background:rgba(10,12,30,.88);display:flex;
-  align-items:center;justify-content:center;padding:18px;cursor:zoom-out}
-#singapointer .sp-lightbox img{max-width:100%;max-height:100%;aspect-ratio:1/1;border:3px solid #fff;border-radius:10px;
-  animation:sp-pop .2s ease-out}
 
 /* ---------- narrow screens: photo on top, map below ---------- */
 @media (max-width:760px){
