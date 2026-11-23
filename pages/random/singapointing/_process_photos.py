@@ -101,10 +101,10 @@ def write_entries(entries):
     entries = sorted(entries, key=lambda e: e["file"])
     body = ",\n".join("  " + json.dumps(e, ensure_ascii=False) for e in entries)
     OUT.write_text(
-        "// Singapointer photo pool. Maintained by _process_photos.py, but safe to edit by\n"
+        "// Singapointing photo pool. Maintained by _process_photos.py, but safe to edit by\n"
         "// hand. `file` is relative to this folder; `caption` is optional and is shown on\n"
         "// the answer marker.\n"
-        f"window.SINGAPOINTER_PHOTOS = [\n{body}\n];\n"
+        f"window.SINGAPOINTING_PHOTOS = [\n{body}\n];\n"
     )
 
 

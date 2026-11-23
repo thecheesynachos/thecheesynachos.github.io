@@ -15,7 +15,7 @@
 //     {rating}    the round's rating word (from `ratings` below)
 //
 // Strings marked (html) may use <b>, <em> and <kbd>; the rest are plain text.
-// Round count, points and distances live at the top of singapointer.js.
+// Round count, points and distances live at the top of singapointing.js.
 
 window.SINGAPOINTING_TEXT = {
 
@@ -33,7 +33,7 @@ window.SINGAPOINTING_TEXT = {
     noPhotos: "No photos yet. Add some to data-photos.js.",
   },
 
-  // --- title screen: optional challenges (times are set in singapointer.js) ---
+  // --- title screen: optional challenges (times are set in singapointing.js) ---
   options: {
     heading: "Challenges",
     timer: "{seconds}s timer",

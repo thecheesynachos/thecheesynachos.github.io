@@ -1,7 +1,8 @@
 ---
 layout: page
 title: The SingaPointing Game
-permalink: /random/singapointer/
+permalink: /random/singapointing/
+redirect_from: /random/singapointer/   # old address keeps working
 sitemap: false
 ---
 
@@ -11,9 +12,9 @@ sitemap: false
   The Singapointing Game — look at a photo, point to where in Singapore it was taken.
 
     text.js            EVERY piece of wording the game shows — edit copy there
-    singapointer.css   styles (all scoped to #singapointer, nothing leaks into the site)
+    singapointing.css   styles (all scoped to #singapointing, nothing leaks into the site)
     pixel.js           hand-drawn pixel sprites + the animated title-screen scene
-    singapointer.js    game logic (ROUNDS, scoring, map setup live at the top)
+    singapointing.js    game logic (ROUNDS, scoring, map setup live at the top)
     data-photos.js     the photo pool: file + lat/lon for each photo
     photos/            the processed photos (square 700px WebP, <=80 KB, metadata stripped)
     _photos_raw/       original photos — local only, gitignored, not published
@@ -22,17 +23,17 @@ sitemap: false
   Leading-underscore files/folders are not published by Jekyll.
 
   Like map_game, the sibling files have no front matter, so Jekyll copies them verbatim
-  to /pages/random/singapointer/ — hence the absolute paths below.
+  to /pages/random/singapointing/ — hence the absolute paths below.
 
   The map uses Leaflet (unpkg) and OpenStreetMap tiles, and the pixel font comes from
   Google Fonts, so unlike map_game this page does make external requests.
 -->
-{% assign sp = "/pages/random/singapointer" | prepend: site.baseurl %}
+{% assign sp = "/pages/random/singapointing" | prepend: site.baseurl %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
-<link rel="stylesheet" href="{{ sp }}/singapointer.css">
+<link rel="stylesheet" href="{{ sp }}/singapointing.css">
 
-<div id="singapointer" data-base="{{ sp }}">
+<div id="singapointing" data-base="{{ sp }}">
   <!-- All wording comes from text.js: data-txt fills text, data-html fills (html)
        strings, data-tip fills a tooltip. Elements with an id are filled in by the game. -->
 
@@ -168,4 +169,4 @@ sitemap: false
 <script src="{{ sp }}/text.js" defer></script>
 <script src="{{ sp }}/data-photos.js" defer></script>
 <script src="{{ sp }}/pixel.js" defer></script>
-<script src="{{ sp }}/singapointer.js" defer></script>
+<script src="{{ sp }}/singapointing.js" defer></script>

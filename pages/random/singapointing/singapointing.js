@@ -1,5 +1,5 @@
 // The Singapointing Game — game logic. Expects Leaflet (window.L), text.js, data-photos.js,
-// pixel.js and the #singapointer markup from index.html to be in the document.
+// pixel.js and the #singapointing markup from index.html to be in the document.
 //
 // No wording lives in this file: everything the player reads comes from text.js.
 "use strict";
@@ -37,12 +37,12 @@ const SG_BOUNDS = [[1.13, 103.55], [1.50, 104.12]];   // panning is kept inside 
 const BEST_KEY = "singapointingBest";          // + ":t-p-outline" etc. for challenge combos
 const SETTINGS_KEY = "singapointingSettings";
 
-const box = document.getElementById("singapointer");
+const box = document.getElementById("singapointing");
 const $ = function (id) { return document.getElementById(id); };
 const BASE = box.dataset.base || ".";
 const PX = window.SP_PIXEL;
 const T = window.SINGAPOINTING_TEXT;
-const POOL = (window.SINGAPOINTER_PHOTOS || []).filter(function (p) {
+const POOL = (window.SINGAPOINTING_PHOTOS || []).filter(function (p) {
   return p && p.file && isFinite(p.lat) && isFinite(p.lon);
 });
 
@@ -536,7 +536,7 @@ document.addEventListener("keydown", function (e) {
 
 /* ---------- boot ---------- */
 $("sp-logo").src = PX.spriteURL("pin", 2);
-document.querySelectorAll("#singapointer [data-sprite]").forEach(function (im) {
+document.querySelectorAll("#singapointing [data-sprite]").forEach(function (im) {
   im.src = PX.spriteURL(im.dataset.sprite, 4);
 });
 $("sp-photo").alt = tx("photo.alt");

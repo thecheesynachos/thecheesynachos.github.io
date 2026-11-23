@@ -1,7 +1,7 @@
-// Singapointer photo pool. Maintained by _process_photos.py, but safe to edit by
+// Singapointing photo pool. Maintained by _process_photos.py, but safe to edit by
 // hand. `file` is relative to this folder; `caption` is optional and is shown on
 // the answer marker.
-window.SINGAPOINTER_PHOTOS = [
+window.SINGAPOINTING_PHOTOS = [
   {"file": "photos/IMG_0008.webp", "lat": 1.288594, "lon": 103.771544},
   {"file": "photos/IMG_0263.webp", "lat": 1.326475, "lon": 103.781639},
   {"file": "photos/IMG_0284.webp", "lat": 1.294489, "lon": 103.859047},
