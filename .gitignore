@@ -17,3 +17,5 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+# Singapointer original photos (local only; processed copies live in photos/)
+pages/random/singapointer/_photos_raw/
