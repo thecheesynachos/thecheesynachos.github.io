@@ -20,7 +20,8 @@ sitemap: false
   If you move this folder, update the four paths and the permalink together.
 -->
 {% assign cp = "/pages/random/map_game" | prepend: site.baseurl %}
-<link rel="stylesheet" href="{{ cp }}/citypin.css">
+{% assign v = site.time | date: '%s' %}{% comment %} build time: changes every deploy, so browsers fetch fresh copies of the files below instead of mixing cached old ones with the new page {% endcomment %}
+<link rel="stylesheet" href="{{ cp }}/citypin.css?v={{ v }}">
 
 <div id="citypin">
 
@@ -96,7 +97,7 @@ sitemap: false
 
 </div>
 
-<script src="{{ cp }}/text.js" defer></script>
-<script src="{{ cp }}/data-map.js" defer></script>
-<script src="{{ cp }}/data-cities.js" defer></script>
-<script src="{{ cp }}/citypin.js" defer></script>
+<script src="{{ cp }}/text.js?v={{ v }}" defer></script>
+<script src="{{ cp }}/data-map.js?v={{ v }}" defer></script>
+<script src="{{ cp }}/data-cities.js?v={{ v }}" defer></script>
+<script src="{{ cp }}/citypin.js?v={{ v }}" defer></script>

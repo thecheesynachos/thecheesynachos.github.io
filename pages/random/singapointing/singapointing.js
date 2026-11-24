@@ -169,7 +169,7 @@ function landLayer(m) {
   if (!window.SINGAPOINTING_LAND && !landLoading) {   // fetched the first time someone picks this map
     landLoading = true;
     const s = document.createElement("script");
-    s.src = BASE + "/" + m.land;
+    s.src = BASE + "/" + m.land + (box.dataset.v ? "?v=" + box.dataset.v : "");
     s.onload = function () { if (tiles && tiles.spFill) tiles.spFill(); };
     document.head.appendChild(s);
   }

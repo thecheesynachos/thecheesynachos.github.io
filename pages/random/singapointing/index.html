@@ -29,11 +29,12 @@ sitemap: false
   Google Fonts, so unlike map_game this page does make external requests.
 -->
 {% assign sp = "/pages/random/singapointing" | prepend: site.baseurl %}
+{% assign v = site.time | date: '%s' %}{% comment %} build time: changes every deploy, so browsers fetch fresh copies of the files below instead of mixing cached old ones with the new page {% endcomment %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
-<link rel="stylesheet" href="{{ sp }}/singapointing.css">
+<link rel="stylesheet" href="{{ sp }}/singapointing.css?v={{ v }}">
 
-<div id="singapointing" data-base="{{ sp }}">
+<div id="singapointing" data-base="{{ sp }}" data-v="{{ v }}">
   <!-- All wording comes from text.js: data-txt fills text, data-html fills (html)
        strings, data-tip fills a tooltip. Elements with an id are filled in by the game. -->
 
@@ -169,7 +170,7 @@ sitemap: false
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-<script src="{{ sp }}/text.js" defer></script>
-<script src="{{ sp }}/data-photos.js" defer></script>
-<script src="{{ sp }}/pixel.js" defer></script>
-<script src="{{ sp }}/singapointing.js" defer></script>
+<script src="{{ sp }}/text.js?v={{ v }}" defer></script>
+<script src="{{ sp }}/data-photos.js?v={{ v }}" defer></script>
+<script src="{{ sp }}/pixel.js?v={{ v }}" defer></script>
+<script src="{{ sp }}/singapointing.js?v={{ v }}" defer></script>
