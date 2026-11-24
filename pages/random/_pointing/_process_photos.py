@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Turn the originals in _photos_raw/ into game-ready photos and update data-photos.js.
+"""Turn a game's originals in _photos_raw/ into game-ready photos and update its data-photos.js.
 
-    python3 _process_photos.py            # only new / changed originals
-    python3 _process_photos.py --force    # redo everything
+    python3 _process_photos.py singapointing              # only new / changed originals
+    python3 _process_photos.py chiangmai_pointing --force # redo everything
 
-For each image in _photos_raw/ (subfolders included) this:
-  1. reads its GPS position from the EXIF tags (photos without one are skipped),
+The first argument is the game's folder: a name in pages/random/ (as above) or any path.
+It works the same from any directory, e.g. from the repo root:
+    python3 pages/random/_pointing/_process_photos.py singapointing
+
+For each image in <game>/_photos_raw/ (subfolders included) this:
+  1. reads its GPS position from the EXIF tags; photos without one, or outside the game's
+     area, are skipped (the area is `view` in the game's config.js, or `bounds` if it
+     has no view; an already-processed copy of a skipped photo is removed),
   2. rotates it upright (phones store rotation as a tag, not in the pixels),
   3. centre-crops it to a square (no stretching) and shrinks it to SIZE x SIZE,
      then picks the best WebP quality that keeps the file under MAX_KB,
@@ -35,7 +41,36 @@ MAX_KB = 80        # each photo's file-size budget...
 MAX_QUALITY = 85   # ...reached by stepping WebP quality down from here
 MIN_QUALITY = 15   # ...but never below this (a photo may then end up over budget)
 
-HERE = Path(__file__).resolve().parent
+def game_dir():
+    names = [a for a in sys.argv[1:] if not a.startswith("-")]
+    if len(names) != 1:
+        sys.exit(__doc__)
+    p = Path(names[0]).expanduser()
+    for d in (p, Path(__file__).resolve().parent.parent / names[0]):   # a path, or a name in pages/random/
+        if d.is_dir():
+            return d.resolve()
+    sys.exit(f"no game folder called {names[0]!r}")
+
+
+def game_area():
+    """[[south, west], [north, east]] from config.js: `view`, else `bounds`; None = anywhere."""
+    cfg = HERE / "config.js"
+    if not cfg.exists():
+        return None
+    text = cfg.read_text()
+    for key in ("view", "bounds"):
+        m = re.search(r"^\s*" + key + r"\s*:\s*(\[\s*\[[^\]]*\]\s*,\s*\[[^\]]*\]\s*\])", text, re.M)
+        if m:
+            return json.loads(m.group(1))
+    return None
+
+
+def inside(ll, area):
+    return area is None or (area[0][0] <= ll[0] <= area[1][0] and area[0][1] <= ll[1] <= area[1][1])
+
+
+HERE = game_dir()
+AREA = game_area()
 RAW = HERE / "_photos_raw"
 PHOTOS = HERE / "photos"
 OUT = HERE / "data-photos.js"
@@ -101,10 +136,10 @@ def write_entries(entries):
     entries = sorted(entries, key=lambda e: e["file"])
     body = ",\n".join("  " + json.dumps(e, ensure_ascii=False) for e in entries)
     OUT.write_text(
-        "// Singapointing photo pool. Maintained by _process_photos.py, but safe to edit by\n"
+        "// Photo pool for this game. Maintained by _process_photos.py, but safe to edit by\n"
         "// hand. `file` is relative to this folder; `caption` is optional and is shown on\n"
         "// the answer marker.\n"
-        f"window.SINGAPOINTING_PHOTOS = [\n{body}\n];\n"
+        f"window.POINTING_PHOTOS = [\n{body}\n];\n"
     )
 
 
@@ -126,7 +161,8 @@ def main():
                 continue
             seen[rel] = src.name
             if (not force and rel in entries and dst.exists()
-                    and dst.stat().st_mtime >= src.stat().st_mtime):
+                    and dst.stat().st_mtime >= src.stat().st_mtime
+                    and inside((entries[rel]["lat"], entries[rel]["lon"]), AREA)):
                 unchanged += 1
                 continue
             try:
@@ -134,6 +170,11 @@ def main():
                 ll = gps_of(im)
                 if ll is None:
                     skipped.append(f"{src.name} (no GPS tag)")
+                    continue
+                if not inside(ll, AREA):
+                    skipped.append(f"{src.name} (outside the game's area: {ll[0]}, {ll[1]})")
+                    if dst.exists():
+                        dst.unlink()          # so it also leaves data-photos.js below
                     continue
                 q = save_within_budget(square(im), dst)
             except Exception as e:
@@ -155,6 +196,8 @@ def main():
         print("  skipped  ", s)
     for g in gone:
         print("  dropped  ", g, "(file no longer exists)")
+    if AREA:
+        print(f"game area: {AREA[0]} to {AREA[1]} (from config.js)")
     print(f"{len(done)} processed, {unchanged} unchanged, {len(skipped)} skipped; "
           f"{len(entries)} photos in {OUT.name}")
 

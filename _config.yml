@@ -37,6 +37,13 @@ plugins:
 whitelist:
   - jekyll-redirect-from
 
+# Folders whose names start with "_" aren't published by default. The pointing games'
+# shared engine (pages/random/_pointing/) is underscored to mark it as not-a-page, but
+# browsers load its files, so publish it anyway. (Files inside it that start with "_",
+# like _process_photos.py and _coverage.html, still aren't published.)
+include:
+  - _pointing
+
 
 defaults:
   - scope:

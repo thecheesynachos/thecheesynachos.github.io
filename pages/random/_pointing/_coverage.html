@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo coverage</title>
+<!--
+  Photo coverage map, for planning where to take more photos. Local only: the leading
+  underscore keeps Jekyll from publishing it.
+
+  Open it straight in a browser, picking the game with ?game=, e.g.
+      open "pages/random/_pointing/_coverage.html"                          (SingaPointing)
+      file:///…/pages/random/_pointing/_coverage.html?game=chiangmai_pointing
+  It reads the game's config.js, data-photos.js (and data-land.js if it has one), so it's
+  always up to date after you run _process_photos.py.
+-->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{--ink:#1d1b26;--dim:#6f6879;--line:#e4dccb;--panel:#fffdf8;--paper:#f6f1e7}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--paper)}
+  body{display:flex}
+  #side{width:330px;flex:none;height:100%;overflow:auto;padding:18px 18px 24px;background:var(--panel);border-right:1px solid var(--line)}
+  #map{flex:1;height:100%}
+  h1{font-size:19px;margin:0 0 4px}
+  h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:20px 0 8px}
+  .sub{color:var(--dim);font-size:13px;margin:0}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  .stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11.5px;color:var(--dim)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;border:0;background:#fff;padding:7px 4px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+  label.chk{display:flex;align-items:center;gap:8px;margin:6px 0;cursor:pointer}
+  .legend div{display:flex;align-items:center;gap:8px;font-size:12.5px;margin:3px 0}
+  .legend i{width:16px;height:12px;border-radius:2px;flex:none;border:1px solid rgba(0,0,0,.12)}
+  ol{margin:0;padding-left:22px}
+  ol li{margin:3px 0;font-size:13px}
+  ol a{color:var(--ink);cursor:pointer;text-decoration:underline dotted}
+  .note{font-size:12px;color:var(--dim);margin-top:6px}
+  .leaflet-popup-content{margin:10px}
+  .leaflet-popup-content img{display:block;width:180px;height:180px;object-fit:cover;border-radius:6px}
+  .leaflet-popup-content small{display:block;margin-top:4px;color:var(--dim)}
+  @media (max-width:700px){body{flex-direction:column}#side{width:100%;height:auto;max-height:45%}#map{height:55%}}
+</style>
+</head>
+<body>
+<div id="side">
+  <h1>Photo coverage</h1>
+  <div class="seg" id="games" style="margin:8px 0 10px">
+    <button data-game="singapointing">Singapore</button>
+    <button data-game="chiangmai_pointing">Chiang Mai</button>
+  </div>
+  <p class="sub">Where the game's photos are, and the land they don't reach yet.</p>
+  <div class="stats" id="stats"></div>
+
+  <h2>Shade the land by</h2>
+  <div class="seg" id="mode">
+    <button data-mode="gap" aria-pressed="true">Distance to a photo</button>
+    <button data-mode="count" aria-pressed="false">Photos per square</button>
+  </div>
+  <h2>Square size</h2>
+  <div class="seg" id="size">
+    <button data-km="0.5" aria-pressed="false">0.5 km</button>
+    <button data-km="1" aria-pressed="true">1 km</button>
+    <button data-km="2" aria-pressed="false">2 km</button>
+  </div>
+  <h2>Show</h2>
+  <label class="chk"><input type="checkbox" id="showDots" checked> Photo dots (click one for the photo)</label>
+  <label class="chk"><input type="checkbox" id="showGrid" checked> Shaded squares</label>
+  <label class="chk"><input type="checkbox" id="showRings"> <span><span id="ringLabel">Rings</span> (the game's minimum spacing between photos)</span></label>
+
+  <h2>Legend</h2>
+  <div class="legend" id="legend"></div>
+
+  <h2>Biggest gaps</h2>
+  <label class="chk"><input type="checkbox" id="mainOnly" checked> Main island only</label>
+  <ol id="gaps"></ol>
+  <p class="note">Land spots farthest from any photo, at least 3 km apart. Click one to zoom there.
+    Some will still be places you can't get into (Tuas port, Lim Chu Kang army land, the airport).</p>
+</div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // load the chosen game's files (in order, before the code below runs)
+  const GAME = (new URLSearchParams(location.search).get("game") || "singapointing").replace(/[^\w-]/g, "");
+  const DIR = "../" + GAME + "/";
+  document.title = "Photo coverage: " + GAME;
+  document.write('<script src="' + DIR + 'config.js"><\/script><script src="' + DIR + 'data-photos.js"><\/script>');
+</script>
+<script>
+  const CFG = window.POINTING_CONFIG || {};
+  const LAND_MAP = Object.values(CFG.maps || {}).find(m => m.land);   // a silhouette map means we have land shapes
+  if (LAND_MAP) document.write('<script src="' + DIR + LAND_MAP.land + '"><\/script>');
+</script>
+<script>
+const PHOTOS = (window.POINTING_PHOTOS || []).filter(p => isFinite(p.lat) && isFinite(p.lon));
+const SG = window.POINTING_LAND && window.POINTING_LAND.home;   // the game's own land (null: treat everything as land)
+
+/* ---------- geometry ---------- */
+function km(a, b) {   // haversine distance in km between {lat, lon}
+  const R = 6371, r = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function inRing(x, y, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function onLand(lat, lon) {
+  if (!SG) return true;
+  const polys = SG.type === "Polygon" ? [SG.coordinates] : SG.coordinates;
+  return polys.some(p => inRing(lon, lat, p[0]) && !p.slice(1).some(h => inRing(lon, lat, h)));
+}
+// the main island is the biggest of the land polygons (by outline length)
+const MAIN = SG && SG.type === "MultiPolygon"
+  ? SG.coordinates.reduce((a, b) => (b[0].length > a[0].length ? b : a)) : SG && SG.coordinates;
+function onMain(lat, lon) { return !MAIN || inRing(lon, lat, MAIN[0]); }
+function nearest(pt) {
+  let best = Infinity;
+  for (const p of PHOTOS) { const d = km(pt, p); if (d < best) best = d; }
+  return best;
+}
+
+/* ---------- colours ---------- */
+const GAP_BINS = [   // distance from a square's centre to the nearest photo
+  { max: 1, color: "#2f9e62", label: "under 1 km" },
+  { max: 2, color: "#9ccc65", label: "1 to 2 km" },
+  { max: 3, color: "#ffd54f", label: "2 to 3 km" },
+  { max: 5, color: "#ff9a3c", label: "3 to 5 km" },
+  { max: Infinity, color: "#e23d4b", label: "over 5 km" },
+];
+const COUNT_BINS = [
+  { max: 0, color: "#e23d4b", label: "no photos" },
+  { max: 1, color: "#ffd54f", label: "1 photo" },
+  { max: 3, color: "#9ccc65", label: "2 to 3" },
+  { max: 9, color: "#2f9e62", label: "4 to 9" },
+  { max: Infinity, color: "#1b5e3b", label: "10 or more" },
+];
+const binFor = (bins, v) => bins.find(b => v <= b.max);
+
+/* ---------- map ---------- */
+// the area to grid: the game's fixed bounds, else whatever the photos cover (plus a margin)
+const AREA = (function () {
+  if (Array.isArray(CFG.view)) return CFG.view;       // the photo area, if the game has one
+  if (Array.isArray(CFG.bounds)) return CFG.bounds;
+  if (PHOTOS.length) {
+    const la = PHOTOS.map(p => p.lat), lo = PHOTOS.map(p => p.lon), m = 0.03;
+    return [[Math.min(...la) - m, Math.min(...lo) - m], [Math.max(...la) + m, Math.max(...lo) + m]];
+  }
+  const c = CFG.center || [0, 0];
+  return [[c[0] - 0.1, c[1] - 0.1], [c[0] + 0.1, c[1] + 0.1]];
+})();
+const map = L.map("map", { zoomSnap: 0.5 }).fitBounds(AREA);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+  { maxZoom: 18, maxNativeZoom: 16, attribution: "Tiles &copy; Esri" }).addTo(map);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+  { maxZoom: 18, maxNativeZoom: 16, pane: "shadowPane" }).addTo(map);   // place names on top of the shading
+
+const gridLayer = L.layerGroup().addTo(map);
+const dotLayer = L.layerGroup().addTo(map);
+const ringLayer = L.layerGroup();
+const renderer = L.canvas({ padding: 0.3 });
+
+PHOTOS.forEach(p => {
+  const name = p.file.split("/").pop().replace(/\.\w+$/, "");
+  L.circleMarker([p.lat, p.lon], { renderer, radius: 4, weight: 1.5, color: "#fff", fillColor: "#1d1b26", fillOpacity: 1 })
+    .bindPopup(`<img src="${DIR + p.file}" alt=""><small>${name}${p.caption ? " · " + p.caption : ""}<br>${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</small>`)
+    .addTo(dotLayer);
+  L.circle([p.lat, p.lon], { radius: (CFG.minSepKm || 2) * 1000, weight: 1, color: "#1d1b26", opacity: .25, fill: false, interactive: false })
+    .addTo(ringLayer);
+});
+
+/* ---------- grid ---------- */
+const S = { mode: "gap", km: 1 };
+let cells = [];
+function buildCells() {
+  const midLat = (AREA[0][0] + AREA[1][0]) / 2;
+  const latStep = S.km / 110.574, lonStep = S.km / (111.32 * Math.cos(midLat * Math.PI / 180));
+  cells = [];
+  for (let lat = AREA[0][0]; lat < AREA[1][0]; lat += latStep) {
+    for (let lon = AREA[0][1]; lon < AREA[1][1]; lon += lonStep) {
+      const c = { lat: lat + latStep / 2, lon: lon + lonStep / 2 };
+      const count = PHOTOS.filter(p => p.lat >= lat && p.lat < lat + latStep && p.lon >= lon && p.lon < lon + lonStep).length;
+      if (!count && !onLand(c.lat, c.lon)) continue;   // sea, and nothing there
+      cells.push({ b: [[lat, lon], [lat + latStep, lon + lonStep]], c, count, gap: nearest(c) });
+    }
+  }
+}
+function drawGrid() {
+  gridLayer.clearLayers();
+  const bins = S.mode === "gap" ? GAP_BINS : COUNT_BINS;
+  cells.forEach(cell => {
+    const v = S.mode === "gap" ? cell.gap : cell.count;
+    L.rectangle(cell.b, { renderer, stroke: false, fillColor: binFor(bins, v).color, fillOpacity: .45 })
+      .bindTooltip(`${cell.count} photo${cell.count === 1 ? "" : "s"} here · nearest photo ${cell.gap.toFixed(1)} km`, { sticky: true })
+      .addTo(gridLayer);
+  });
+  document.getElementById("legend").innerHTML = bins.map(b => `<div><i style="background:${b.color}"></i>${b.label}</div>`).join("");
+}
+function drawGaps() {
+  if (!PHOTOS.length) { document.getElementById("gaps").innerHTML = ""; return; }
+  const picked = [];
+  const mainOnly = document.getElementById("mainOnly").checked;
+  [...cells].filter(c => c.count === 0 && (!mainOnly || onMain(c.c.lat, c.c.lon))).sort((a, b) => b.gap - a.gap).forEach(c => {
+    if (picked.length < 12 && picked.every(p => km(p.c, c.c) >= 3)) picked.push(c);
+  });
+  const ol = document.getElementById("gaps");
+  ol.innerHTML = "";
+  picked.forEach(c => {
+    const li = document.createElement("li");
+    li.innerHTML = `<a>${c.gap.toFixed(1)} km from a photo</a> <span style="color:var(--dim)">(${c.c.lat.toFixed(3)}, ${c.c.lon.toFixed(3)})</span>`;
+    li.querySelector("a").onclick = () => map.setView([c.c.lat, c.c.lon], 14);
+    ol.appendChild(li);
+  });
+}
+function drawStats() {
+  const land = cells.filter(c => onLand(c.c.lat, c.c.lon));
+  const within = r => Math.round(100 * land.filter(c => c.gap <= r).length / (land.length || 1));
+  const withPhotos = cells.filter(c => c.count > 0).length;
+  document.getElementById("stats").innerHTML = [
+    [PHOTOS.length, "photos"],
+    [withPhotos, `${S.km} km squares with a photo`],
+    [within(1) + "%", (SG ? "of land" : "of the area") + " within 1 km of a photo"],
+    [within(2) + "%", (SG ? "of land" : "of the area") + " within 2 km of a photo"],
+  ].map(([v, k]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join("");
+}
+function render() { buildCells(); drawGrid(); drawGaps(); drawStats(); }
+
+/* ---------- controls ---------- */
+function segment(id, key, parse) {
+  document.querySelectorAll(`#${id} button`).forEach(b => b.onclick = () => {
+    document.querySelectorAll(`#${id} button`).forEach(x => x.setAttribute("aria-pressed", x === b));
+    S[key] = parse(b.dataset[key]);
+    key === "mode" ? drawGrid() : render();
+  });
+}
+segment("mode", "mode", v => v);
+segment("size", "km", Number);
+const toggle = (id, layer) => document.getElementById(id).onchange = e => e.target.checked ? layer.addTo(map) : map.removeLayer(layer);
+toggle("showDots", dotLayer);
+toggle("showGrid", gridLayer);
+toggle("showRings", ringLayer);
+document.getElementById("mainOnly").onchange = drawGaps;
+
+if (!SG) document.getElementById("mainOnly").parentNode.style.display = "none";   // no land shapes: nothing to filter by
+document.querySelector("h1").textContent = "Photo coverage";
+document.getElementById("ringLabel").textContent = (CFG.minSepKm || 2) + " km rings";
+document.querySelectorAll("#games button").forEach(b => {   // switch game: reload with ?game=
+  b.setAttribute("aria-pressed", b.dataset.game === GAME);
+  b.onclick = () => { location.search = "?game=" + b.dataset.game; };
+});
+if (!PHOTOS.length) document.querySelector(".sub").textContent = "No photos in " + GAME + "/data-photos.js yet.";
+render();
+</script>
+</body>
+</html>

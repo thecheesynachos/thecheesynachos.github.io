@@ -1,0 +1,170 @@
+{% comment %}
+  A pointing game: look at a photo, point to where on the map it was taken.
+  Used as   {% include pointing-game.html game="singapointing" %}
+  where `game` is a folder in pages/random/ holding that game's own files:
+
+    config.js          map area, map styles, scoring, title-screen scene, save-name
+    text.js            EVERY piece of wording the game shows
+    data-photos.js     the photo pool: file + lat/lon per photo (written by _process_photos.py)
+    photos/            the processed photos (square 700px WebP, <=80 KB, metadata stripped)
+    _photos_raw/       original photos: local only, gitignored, not published
+    data-land.js       (optional) land shapes for a silhouette map
+
+  The shared engine lives in pages/random/_pointing/: pointing.js (game logic),
+  pointing.css (styles, all scoped to #pointing), pixel.js (sprites + title scenes),
+  _process_photos.py and _coverage.html (local tools; underscore = not published).
+  The folder's underscore marks it as not-a-page; `include: [_pointing]` in _config.yml
+  still publishes it, since browsers load the engine files from it.
+
+  Files without front matter are copied verbatim by Jekyll, hence the absolute paths.
+  `v` is the build time: it changes every deploy, so browsers fetch fresh copies of the
+  files instead of mixing cached old ones with the new page.
+{% endcomment %}
+{% assign game = "/pages/random/" | append: include.game | prepend: site.baseurl %}
+{% assign engine = "/pages/random/_pointing" | prepend: site.baseurl %}
+{% assign v = site.time | date: '%s' %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
+<link rel="stylesheet" href="{{ engine }}/pointing.css?v={{ v }}">
+
+<div id="pointing" data-base="{{ game }}" data-v="{{ v }}">
+  <!-- All wording comes from text.js: data-txt fills text, data-html fills (html)
+       strings, data-tip fills a tooltip. Elements with an id are filled in by the game. -->
+
+  <!-- top bar -->
+  <div class="sp-hud">
+    <div class="sp-brand"><img class="sp-logo" id="sp-logo" alt=""><span data-txt="hud.name"></span></div>
+    <div class="sp-pips" id="sp-pips"></div>
+    <div class="sp-scorebox"><span class="sp-k" data-txt="hud.score"></span><span class="sp-v" id="sp-score">0</span></div>
+    <div class="sp-tools">
+      <button class="sp-tool" id="sp-help-btn" data-tip="hud.help">?</button>
+      <button class="sp-tool" id="sp-home-btn" data-tip="hud.home"><img data-sprite="homeLight" alt=""></button>
+      <button class="sp-tool sp-fs-btn" id="sp-fs" data-tip="hud.fullscreen">&#9974;</button>
+    </div>
+  </div>
+
+  <!-- play area -->
+  <div class="sp-stage">
+    <div class="sp-photo-col">
+      <div class="sp-photo-box">
+        <div class="sp-frame" id="sp-frame">
+          <img id="sp-photo" alt="">
+          <div class="sp-loading" id="sp-loading"><span></span><span></span><span></span></div>
+          <div class="sp-cover" id="sp-cover"><span data-txt="photo.hidden"></span></div>
+          <i class="sp-peekbar" id="sp-peekbar"></i>
+          <span class="sp-badge" id="sp-badge"></span>
+        </div>
+      </div>
+      <div class="sp-info">
+        <div class="sp-info-round" id="sp-info-round"></div>
+        <div class="sp-tip" id="sp-tip"></div>
+        <div class="sp-info-keys" data-html="info.keys"></div>
+      </div>
+    </div>
+
+    <div class="sp-map-col">
+      <div id="sp-map"></div>
+      <div class="sp-timer sp-hidden" id="sp-timer" data-tip="timer.tip"><b id="sp-timer-n"></b><span><i id="sp-timer-bar"></i></span></div>
+      <div class="sp-dock" id="sp-dock">
+        <button class="sp-btn sp-btn-go" id="sp-guess" disabled></button>
+      </div>
+      <button class="sp-btn sp-btn-go sp-review-back sp-hidden" id="sp-review-back" data-txt="buttons.back"></button>
+      <div class="sp-result sp-hidden" id="sp-result">
+        <div class="sp-result-top">
+          <div>
+            <div class="sp-rating" id="sp-rating"></div>
+            <div class="sp-dist" id="sp-dist"></div>
+          </div>
+          <div class="sp-pts"><b id="sp-pts">0</b><span data-txt="result.outOf"></span></div>
+        </div>
+        <div class="sp-bar"><i id="sp-bar"></i></div>
+        <button class="sp-btn sp-btn-go" id="sp-next"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- title screen -->
+  <div class="sp-splash" id="sp-splash">
+    <canvas class="sp-scene" id="sp-scene"></canvas>
+    <button class="sp-tool sp-fs-btn sp-splash-fs" id="sp-fs2" data-tip="hud.fullscreen">&#9974;</button>
+    <a class="sp-back" href="{{ "/random/" | prepend: site.baseurl }}" data-txt="title.back"></a>
+    <div class="sp-splash-inner">
+      <div class="sp-kicker" data-txt="title.kicker"></div>
+      <h2 class="sp-title"><span data-txt="title.line1"></span><br><span data-txt="title.line2"></span></h2>
+      <div class="sp-title-game" data-txt="title.sub"></div>
+      <p class="sp-tagline" data-txt="title.tagline"></p>
+      <p class="sp-note" data-txt="title.note"></p>
+      <div class="sp-splash-btns">
+        <button class="sp-btn sp-btn-go sp-btn-big" id="sp-play" data-txt="title.play"></button>
+        <button class="sp-btn sp-btn-ghost" id="sp-how" data-txt="title.how"></button>
+      </div>
+      <div class="sp-opts">
+        <div class="sp-opts-h" data-txt="options.heading"></div>
+        <div class="sp-opts-row">
+          <button class="sp-chip" id="sp-opt-timer" aria-pressed="false"><i></i><span data-txt="options.timer"></span></button>
+          <button class="sp-chip" id="sp-opt-peek" aria-pressed="false"><i></i><span data-txt="options.peek"></span></button>
+        </div>
+        <div class="sp-opts-row sp-seg" id="sp-opt-map">
+          <span class="sp-seg-l" data-txt="options.map"></span>
+          <!-- one button per map style in config.js, added by the game -->
+        </div>
+        <div class="sp-opts-desc" id="sp-opt-desc"></div>
+      </div>
+      <div class="sp-splash-stats" id="sp-stats"></div>
+      <div class="sp-visits sp-hidden" id="sp-visits"></div>
+    </div>
+  </div>
+
+  <!-- how to play -->
+  <div class="sp-overlay sp-hidden" id="sp-help">
+    <div class="sp-card sp-card-help">
+      <h3 class="sp-card-title" data-txt="help.title"></h3>
+      <ol class="sp-steps">
+        <li><img data-sprite="camera" alt=""><div data-html="help.step1"></div></li>
+        <li><img data-sprite="pin" alt=""><div data-html="help.step2"></div></li>
+        <li><img data-sprite="trophy" alt=""><div data-html="help.step3"></div></li>
+      </ol>
+      <div class="sp-keys" data-html="help.keys"></div>
+      <button class="sp-btn sp-btn-go sp-wide" id="sp-help-close" data-txt="help.close"></button>
+    </div>
+  </div>
+
+  <!-- results -->
+  <div class="sp-overlay sp-hidden" id="sp-end">
+    <div class="sp-card sp-card-end">
+      <div class="sp-kicker sp-kicker-dark" data-txt="end.kicker"></div>
+      <div class="sp-total"><b id="sp-total">0</b><span data-txt="end.outOf"></span></div>
+      <div class="sp-grade" id="sp-grade"></div>
+      <div class="sp-modes" id="sp-modes"></div>
+      <div class="sp-best" id="sp-best"></div>
+      <div class="sp-rows" id="sp-rows"></div>
+      <div class="sp-end-btns">
+        <button class="sp-btn sp-btn-go" id="sp-again" data-txt="end.playAgain"></button>
+        <button class="sp-btn sp-btn-ghost-dark" id="sp-review" data-txt="end.review"></button>
+        <button class="sp-btn sp-btn-ghost-dark sp-btn-icon" id="sp-end-home"><img data-sprite="homeDark" alt=""><span data-txt="end.home"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- leave the game? -->
+  <div class="sp-overlay sp-hidden" id="sp-leave">
+    <div class="sp-card sp-card-small">
+      <img class="sp-card-icon" data-sprite="homeDark" alt="">
+      <h3 class="sp-card-title" data-txt="leave.title"></h3>
+      <p class="sp-card-text" data-txt="leave.text"></p>
+      <div class="sp-dialog-btns">
+        <button class="sp-btn sp-btn-go" id="sp-leave-stay" data-txt="leave.stay"></button>
+        <button class="sp-btn sp-btn-ghost-dark" id="sp-leave-go" data-txt="leave.go"></button>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script src="{{ game }}/config.js?v={{ v }}" defer></script>
+<script src="{{ game }}/text.js?v={{ v }}" defer></script>
+<script src="{{ game }}/data-photos.js?v={{ v }}" defer></script>
+<script src="{{ engine }}/pixel.js?v={{ v }}" defer></script>
+<script src="{{ engine }}/pointing.js?v={{ v }}" defer></script>

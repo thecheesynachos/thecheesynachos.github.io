@@ -1,0 +1,309 @@
+/* Pointing games — shared styles. Every rule is scoped to #pointing so nothing touches the site. */
+
+#pointing{
+  --sp-paper:#f6f1e7; --sp-panel:#fffdf8; --sp-ink:#1d1b26; --sp-dim:#6f6879; --sp-line:#e4dccb;
+  --sp-red:#e23d4b; --sp-red-d:#b82835; --sp-green:#22a565; --sp-green-d:#167a49;
+  --sp-gold:#f2b33d; --sp-orange:#ef7d3c; --sp-night:#171a3f; --sp-night2:#2d2c6e;
+  --sp-pixel:"Silkscreen","Courier New",monospace;
+  position:relative;display:flex;flex-direction:column;
+  height:min(88vh,860px);min-height:560px;
+  background:var(--sp-paper);color:var(--sp-ink);
+  border:3px solid var(--sp-ink);border-radius:14px;overflow:hidden;
+  box-shadow:0 6px 0 var(--sp-ink);
+  font:15px/1.45 "Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+#pointing.sp-full{position:fixed;inset:0;z-index:9999;width:auto;height:auto;min-height:0;max-width:none;
+  border-radius:0;border:0;box-shadow:none}
+#pointing:fullscreen{width:100%;height:100%}
+/* on its own full-window page (layout: game) the game is the whole page */
+body.game-page #pointing{position:fixed;inset:0;width:auto;height:auto;min-height:0;max-width:none;
+  border:0;border-radius:0;box-shadow:none}
+#pointing *{box-sizing:border-box}
+/* neutralise the site's typography inside the game */
+#pointing h2,#pointing h3,#pointing p,#pointing ol,#pointing li{margin:0;padding:0}
+#pointing ol{list-style:none}
+#pointing img{max-width:none;vertical-align:top;border:0}
+#pointing .sp-hidden{display:none!important}
+
+/* ---------- buttons ---------- */
+#pointing button{font:inherit;margin:0;cursor:pointer;color:inherit}
+#pointing .sp-btn{font-family:var(--sp-pixel);font-size:15px;letter-spacing:.04em;line-height:1;
+  padding:12px 20px;border:3px solid var(--sp-ink);border-radius:8px;background:#fff;color:var(--sp-ink);
+  box-shadow:0 4px 0 var(--sp-ink);transition:transform .06s,box-shadow .06s,background .12s;white-space:nowrap}
+#pointing .sp-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 0 var(--sp-ink)}
+#pointing .sp-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--sp-ink)}
+#pointing .sp-btn:disabled{cursor:default}
+#pointing .sp-btn-go{background:var(--sp-red);color:#fff}
+#pointing .sp-btn-go:hover:not(:disabled){background:#ef4957}
+#pointing .sp-btn-go:disabled{background:#d9d2c4;color:#7a7383;box-shadow:0 4px 0 #b3ab9b;border-color:#b3ab9b}
+#pointing .sp-btn-big{font-size:22px;padding:16px 34px}
+#pointing .sp-btn-ghost{background:rgba(255,255,255,.12);color:#fff;border-color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.45)}
+#pointing .sp-btn-ghost:hover{background:rgba(255,255,255,.22)}
+#pointing .sp-btn-ghost-dark{background:transparent}
+#pointing .sp-wide{width:100%}
+
+/* ---------- top bar ---------- */
+#pointing .sp-hud{display:flex;align-items:center;gap:14px;padding:8px 12px;flex:none;
+  background:var(--sp-night);color:#fff;border-bottom:3px solid var(--sp-ink)}
+#pointing .sp-brand{display:flex;align-items:center;gap:8px;font-family:var(--sp-pixel);font-size:17px;
+  letter-spacing:.03em;white-space:nowrap}
+#pointing .sp-logo{width:22px;height:32px;image-rendering:pixelated}
+#pointing .sp-pips{display:flex;gap:6px;margin-left:auto}
+#pointing .sp-pip{width:26px;height:26px;border:2px solid #fff;border-radius:5px;display:flex;
+  align-items:center;justify-content:center;font-family:var(--sp-pixel);font-size:12px;color:rgba(255,255,255,.75);
+  background:rgba(255,255,255,.06)}
+#pointing .sp-pip.sp-now{background:#fff;color:var(--sp-night);animation:sp-pulse 1.2s ease-in-out infinite}
+#pointing .sp-pip.sp-t-great{background:var(--sp-green);color:#fff}
+#pointing .sp-pip.sp-t-good{background:var(--sp-gold);color:var(--sp-ink)}
+#pointing .sp-pip.sp-t-ok{background:var(--sp-orange);color:#fff}
+#pointing .sp-pip.sp-t-bad{background:var(--sp-red);color:#fff}
+@keyframes sp-pulse{50%{box-shadow:0 0 0 3px rgba(255,255,255,.35)}}
+#pointing .sp-scorebox{display:flex;flex-direction:column;align-items:flex-end;min-width:86px;line-height:1.05}
+#pointing .sp-k{font-family:var(--sp-pixel);font-size:10px;letter-spacing:.12em;color:#b9b6e0;text-transform:uppercase}
+#pointing .sp-v{font-family:var(--sp-pixel);font-size:21px;font-variant-numeric:tabular-nums}
+#pointing .sp-tools{display:flex;gap:6px}
+#pointing .sp-tool{width:34px;height:34px;padding:0;border:2px solid #fff;border-radius:7px;background:transparent;
+  color:#fff;font-family:var(--sp-pixel);font-size:16px;line-height:1}
+#pointing .sp-tool:hover{background:rgba(255,255,255,.15)}
+/* pixel icons are drawn at 4x and shown at exactly half size so they stay crisp */
+#pointing .sp-tool img{width:22px;height:20px;image-rendering:pixelated;display:block;margin:auto}
+#pointing .sp-btn-icon{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+#pointing .sp-btn-icon img{width:22px;height:20px;image-rendering:pixelated;flex:none}
+
+/* ---------- play area ---------- */
+#pointing .sp-stage{flex:1;min-height:0;display:flex;gap:12px;padding:12px;container-type:size}
+#pointing .sp-photo-col{flex:none;width:44%;display:flex;flex-direction:column;gap:12px;min-height:0}
+@supports (width:1cqh){
+  /* as wide as the biggest square that still leaves room for the info card below */
+  #pointing .sp-photo-col{width:min(50cqw, calc(100cqh - 104px))}
+}
+#pointing .sp-photo-box{flex:none;display:flex;justify-content:center}
+#pointing .sp-frame{position:relative;width:100%;aspect-ratio:1/1;
+  border:3px solid var(--sp-ink);border-radius:10px;overflow:hidden;background:var(--sp-night);
+  box-shadow:0 4px 0 var(--sp-ink)}
+#pointing #sp-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity .25s}
+#pointing #sp-photo.sp-in{opacity:1}
+#pointing .sp-badge{position:absolute;left:10px;top:10px;font-family:var(--sp-pixel);font-size:12px;
+  letter-spacing:.06em;background:var(--sp-ink);color:#fff;padding:5px 8px;border-radius:5px;pointer-events:none}
+#pointing .sp-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;
+  pointer-events:none}
+#pointing .sp-loading span{width:10px;height:10px;background:#fff;animation:sp-blink 1s steps(2) infinite}
+#pointing .sp-loading span:nth-child(2){animation-delay:.33s}
+#pointing .sp-loading span:nth-child(3){animation-delay:.66s}
+@keyframes sp-blink{50%{opacity:.15}}
+#pointing .sp-info{flex:1;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:6px;
+  padding:12px 16px;border:3px solid var(--sp-ink);border-radius:10px;background:var(--sp-panel);
+  box-shadow:0 4px 0 var(--sp-ink);overflow:hidden}
+#pointing .sp-info-round{font-family:var(--sp-pixel);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--sp-red)}
+#pointing .sp-tip{font-size:15px;color:var(--sp-ink);line-height:1.35}
+#pointing .sp-tip b{font-weight:700}
+#pointing .sp-info-keys{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--sp-dim)}
+#pointing kbd{font-family:var(--sp-pixel);font-size:11px;border:2px solid currentColor;border-radius:4px;
+  padding:1px 5px;background:#fff;color:var(--sp-ink)}
+
+#pointing .sp-map-col{position:relative;flex:1;min-width:0;border:3px solid var(--sp-ink);border-radius:10px;
+  overflow:hidden;box-shadow:0 4px 0 var(--sp-ink);background:#aad3df}
+#pointing #sp-map{position:absolute;inset:0;cursor:crosshair}
+#pointing .leaflet-container{font:inherit;background:#aad3df}
+#pointing .leaflet-tile-pane{filter:saturate(.85) contrast(.97)}
+#pointing .leaflet-bar{border:2px solid var(--sp-ink);border-radius:7px;box-shadow:0 3px 0 var(--sp-ink)}
+#pointing .leaflet-bar a{font-family:var(--sp-pixel);color:var(--sp-ink);width:32px;height:32px;line-height:30px}
+#pointing .leaflet-control-attribution{font-size:10px;background:rgba(255,253,248,.85)}
+#pointing .leaflet-tooltip{font-family:var(--sp-pixel);font-size:11px;border:2px solid var(--sp-ink);
+  border-radius:5px;box-shadow:0 2px 0 var(--sp-ink);padding:3px 6px;color:var(--sp-ink)}
+
+/* pins (pixel sprites; the inner img animates so Leaflet's own transform is untouched) */
+#pointing .sp-pin{background:none;border:0}
+#pointing .sp-pin img{width:100%;height:100%;image-rendering:pixelated;
+  filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));animation:sp-drop .35s cubic-bezier(.3,1.6,.6,1)}
+@keyframes sp-drop{from{transform:translateY(-22px)}to{transform:none}}
+#pointing .sp-pin-n{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font-family:var(--sp-pixel);
+  font-size:11px;background:var(--sp-ink);color:#fff;border-radius:4px;padding:0 4px;line-height:15px}
+
+/* guess button dock + per-round result card, floating over the map */
+#pointing .sp-dock{position:absolute;left:0;right:0;bottom:22px;display:flex;justify-content:center;
+  pointer-events:none;z-index:500}
+#pointing .sp-dock .sp-btn{pointer-events:auto;font-size:17px;padding:14px 26px}
+#pointing .sp-result{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:500;
+  width:min(420px,calc(100% - 24px));background:var(--sp-panel);border:3px solid var(--sp-ink);border-radius:12px;
+  box-shadow:0 5px 0 var(--sp-ink);padding:14px 16px 16px;animation:sp-up .3s cubic-bezier(.2,1.4,.5,1)}
+@keyframes sp-up{from{transform:translate(-50%,30px);opacity:0}}
+#pointing .sp-result-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+#pointing .sp-rating{font-family:var(--sp-pixel);font-size:20px;line-height:1.1}
+#pointing .sp-dist{color:var(--sp-dim);font-size:14px;margin-top:3px}
+#pointing .sp-pts{text-align:right;white-space:nowrap}
+#pointing .sp-pts b{font-family:var(--sp-pixel);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+#pointing .sp-pts span,#pointing .sp-total span{display:block;font-size:12px;color:var(--sp-dim)}
+#pointing .sp-pts i,#pointing .sp-total i{font-style:normal}
+#pointing .sp-bar{height:14px;border:2px solid var(--sp-ink);border-radius:4px;margin:10px 0 14px;
+  background:repeating-linear-gradient(90deg,#efe8da 0 8px,#e6dece 8px 10px);overflow:hidden}
+#pointing .sp-bar i{display:block;height:100%;width:0;background:var(--sp-green);transition:width .8s cubic-bezier(.2,.8,.3,1)}
+#pointing .sp-result .sp-btn{width:100%}
+#pointing .sp-c-great{color:var(--sp-green-d)} #pointing .sp-c-good{color:#b07d12}
+#pointing .sp-c-ok{color:#c45a1c} #pointing .sp-c-bad{color:var(--sp-red-d)}
+
+/* ---------- title screen ---------- */
+#pointing .sp-splash{position:absolute;inset:0;z-index:1000;background:var(--sp-night);overflow:hidden}
+#pointing .sp-scene{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block}
+#pointing .sp-splash-fs{position:absolute;top:12px;right:12px;z-index:2;background:rgba(23,26,63,.55)}
+#pointing .sp-back{position:absolute;top:12px;left:12px;z-index:2;padding:9px 12px;border:2px solid #fff;
+  border-radius:7px;background:rgba(23,26,63,.55);color:#fff;font-family:var(--sp-pixel);font-size:12px;line-height:1;
+  letter-spacing:.04em;text-decoration:none}
+#pointing .sp-back:hover{background:rgba(23,26,63,.85);color:#fff;text-decoration:none}
+body:not(.game-page) #pointing .sp-back{display:none}   /* only needed when there's no site header */
+#pointing .sp-splash-inner{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;padding:9% 20px 0;text-align:center;color:#fff}
+#pointing .sp-kicker{font-family:var(--sp-pixel);font-weight:700;font-size:clamp(18px,3vw,28px);letter-spacing:.5em;
+  margin-left:.5em;text-transform:uppercase;color:#ffd27a;text-shadow:3px 3px 0 var(--sp-night)}
+#pointing .sp-kicker-dark{color:var(--sp-dim);text-shadow:none;font-size:12px;font-weight:400;letter-spacing:.22em;margin-left:0}
+#pointing .sp-title{font-family:var(--sp-pixel);font-weight:700;font-size:clamp(38px,8.4vw,84px);line-height:.92;
+  letter-spacing:.02em;text-transform:uppercase;color:#fff;margin:10px 0 12px;
+  text-shadow:4px 4px 0 var(--sp-red),8px 8px 0 var(--sp-night)}
+#pointing .sp-title-game{font-family:var(--sp-pixel);font-weight:700;font-size:clamp(18px,3vw,28px);
+  letter-spacing:.5em;margin:-4px 0 14px .5em;text-transform:uppercase;color:#ffd27a;
+  text-shadow:3px 3px 0 var(--sp-night)}
+#pointing .sp-tagline{font-size:17px;text-shadow:2px 2px 0 var(--sp-night);margin-bottom:4px}
+#pointing .sp-note{font-size:12.5px;opacity:.8;text-shadow:1px 1px 0 var(--sp-night);margin-bottom:22px}
+#pointing .sp-splash-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+#pointing .sp-splash-stats{margin-top:18px;font-family:var(--sp-pixel);font-size:12px;letter-spacing:.06em;
+  color:#e7e3ff;text-shadow:2px 2px 0 var(--sp-night)}
+#pointing .sp-splash-stats b{color:#ffd27a;font-weight:400}
+#pointing .sp-visits{margin-top:8px;font-family:var(--sp-pixel);font-size:11px;letter-spacing:.06em;
+  color:#e7e3ff;opacity:.8;text-shadow:2px 2px 0 var(--sp-night)}
+#pointing .sp-visits b{color:#ffd27a;font-weight:400}
+#pointing .sp-visits::before{content:"";display:inline-block;width:7px;height:7px;margin-right:7px;
+  vertical-align:1px;background:var(--sp-green);box-shadow:0 0 0 2px rgba(34,165,101,.35)}
+
+/* title-screen challenge toggles */
+#pointing .sp-opts{margin-top:20px;padding:12px 16px 10px;background:rgba(23,26,63,.78);border:2px solid rgba(255,255,255,.55);
+  border-radius:10px;max-width:660px;width:100%}
+#pointing .sp-opts-h{font-family:var(--sp-pixel);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#ffd27a;margin-bottom:8px}
+#pointing .sp-opts-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:8px}
+#pointing .sp-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border:2px solid #fff;border-radius:7px;
+  background:transparent;color:#fff;font-family:var(--sp-pixel);font-size:13px;line-height:1}
+#pointing .sp-chip i{width:14px;height:14px;border:2px solid #fff;flex:none}
+#pointing .sp-chip[aria-pressed="true"]{background:#fff;color:var(--sp-night)}
+#pointing .sp-chip[aria-pressed="true"] i{background:var(--sp-red);border-color:var(--sp-night);box-shadow:inset 0 0 0 2px #fff}
+#pointing .sp-chip:hover{background:rgba(255,255,255,.15)}
+#pointing .sp-chip[aria-pressed="true"]:hover{background:#fff}
+#pointing .sp-seg{gap:0;align-items:center;flex-wrap:nowrap}
+#pointing .sp-seg-l{font-family:var(--sp-pixel);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#b9b6e0;margin-right:10px}
+#pointing .sp-seg button{padding:7px 10px;border:2px solid #fff;border-left-width:0;background:transparent;color:#fff;
+  font-family:var(--sp-pixel);font-size:12px;line-height:1}
+#pointing .sp-seg button:first-of-type{border-left-width:2px;border-radius:7px 0 0 7px}
+#pointing .sp-seg button:last-of-type{border-radius:0 7px 7px 0}
+#pointing .sp-seg button:hover{background:rgba(255,255,255,.15)}
+#pointing .sp-seg button[aria-pressed="true"]{background:#fff;color:var(--sp-night)}
+#pointing .sp-opts-desc{font-size:12.5px;color:#d8d4f5;min-height:1.4em}
+
+/* timer, shown over the top of the map */
+#pointing .sp-timer{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:550;display:flex;align-items:center;
+  gap:8px;padding:5px 10px 5px 12px;background:var(--sp-panel);border:3px solid var(--sp-ink);border-radius:9px;
+  box-shadow:0 3px 0 var(--sp-ink);pointer-events:none}
+#pointing .sp-timer b{font-family:var(--sp-pixel);font-size:20px;min-width:28px;text-align:right;font-variant-numeric:tabular-nums}
+#pointing .sp-timer span{display:block;width:90px;height:10px;border:2px solid var(--sp-ink);border-radius:3px;overflow:hidden;background:#efe8da}
+#pointing .sp-timer i{display:block;height:100%;background:var(--sp-green)}
+#pointing .sp-timer.sp-low b{color:var(--sp-red);animation:sp-blink .5s steps(2) infinite}
+#pointing .sp-timer.sp-low i{background:var(--sp-red)}
+
+/* quick look: a draining bar while the photo is visible, then a cover */
+#pointing .sp-peekbar{position:absolute;left:0;bottom:0;height:6px;width:0;background:var(--sp-gold);z-index:2}
+#pointing .sp-cover{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:3;
+  background:var(--sp-night) repeating-conic-gradient(#20255a 0 25%,var(--sp-night) 0 50%) 0 0/16px 16px}
+#pointing .sp-cover span{font-family:var(--sp-pixel);font-size:16px;color:#fff;background:var(--sp-ink);padding:8px 12px;
+  border:2px solid #fff;border-radius:6px}
+#pointing .sp-frame.sp-covered .sp-cover{display:flex}
+#pointing .sp-frame.sp-covered #sp-photo{visibility:hidden}
+
+#pointing .sp-modes{font-family:var(--sp-pixel);font-size:11px;letter-spacing:.06em;color:var(--sp-red-d);margin-top:4px;min-height:0}
+#pointing .sp-modes:empty{display:none}
+
+/* ---------- overlays (help, results) ---------- */
+#pointing .sp-overlay{position:absolute;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;
+  padding:16px;background:rgba(23,26,63,.72);overflow:auto}
+#pointing .sp-card{background:var(--sp-panel);border:3px solid var(--sp-ink);border-radius:14px;
+  box-shadow:0 6px 0 var(--sp-ink);padding:22px;width:100%;max-width:470px;margin:auto;animation:sp-pop .25s cubic-bezier(.2,1.4,.5,1)}
+@keyframes sp-pop{from{transform:scale(.92);opacity:0}}
+#pointing .sp-card-title{font-family:var(--sp-pixel);font-size:22px;font-weight:700;font-style:normal;
+  letter-spacing:.02em;margin-bottom:14px;color:var(--sp-ink)}
+#pointing .sp-steps li{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+#pointing .sp-steps img{flex:none;width:44px;height:44px;object-fit:contain;image-rendering:pixelated}
+#pointing .sp-keys{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--sp-dim);margin:4px 0 18px}
+
+#pointing .sp-card-help{max-width:600px}   /* wide enough for each step on one line */
+#pointing .sp-card-small{max-width:400px;text-align:center}
+#pointing .sp-card-icon{width:44px;height:40px;image-rendering:pixelated;margin:0 auto 10px;display:block}
+#pointing .sp-card-text{color:var(--sp-dim);margin:0 0 18px}
+#pointing .sp-dialog-btns{display:flex;gap:10px}
+#pointing .sp-dialog-btns .sp-btn{flex:1;min-width:0;white-space:normal;line-height:1.2;padding:12px 10px}
+#pointing .sp-card-end{max-width:520px;text-align:center}
+#pointing .sp-total b{display:block;font-family:var(--sp-pixel);font-size:54px;line-height:1;margin-top:6px;
+  font-variant-numeric:tabular-nums}
+#pointing .sp-total span{margin-top:4px}
+#pointing .sp-grade{font-family:var(--sp-pixel);font-size:18px;margin-top:12px}
+#pointing .sp-best{font-size:13px;color:var(--sp-dim);margin-top:4px;min-height:1em}
+#pointing .sp-best .sp-new{font-family:var(--sp-pixel);color:#fff;background:var(--sp-red);padding:2px 6px;
+  border-radius:4px;animation:sp-blink 1s steps(2) infinite}
+#pointing .sp-rows{margin:16px 0 18px;text-align:left;border-top:2px dashed var(--sp-line)}
+#pointing .sp-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:2px dashed var(--sp-line)}
+#pointing .sp-row img{width:46px;height:46px;border:2px solid var(--sp-ink);border-radius:6px;object-fit:cover;flex:none}
+#pointing .sp-row-mid{flex:1;min-width:0}
+#pointing .sp-row-name{font-family:var(--sp-pixel);font-size:12px}
+#pointing .sp-row-dist{font-size:13px;color:var(--sp-dim)}
+#pointing .sp-row .sp-bar{height:9px;margin:4px 0 0;border-width:2px}
+#pointing .sp-row-pts{font-family:var(--sp-pixel);font-size:15px;min-width:64px;text-align:right;font-variant-numeric:tabular-nums}
+#pointing .sp-end-btns{display:flex;flex-wrap:wrap;gap:10px}
+#pointing .sp-end-btns #sp-again{flex:1 1 100%}   /* play again on its own row, the other two below */
+#pointing .sp-end-btns .sp-btn{flex:1;min-width:0;white-space:normal;line-height:1.2}
+#pointing .sp-review-back{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:600}
+#pointing .sp-review-back:hover:not(:disabled){transform:translate(-50%,-1px)}
+#pointing .sp-review-back:active:not(:disabled){transform:translate(-50%,3px)}
+
+/* ---------- narrow screens: photo on top, map below ---------- */
+@media (max-width:760px){
+  #pointing{height:min(92svh,900px);min-height:600px;border-radius:10px}
+  #pointing .sp-hud{gap:8px;padding:7px 8px}
+  #pointing .sp-brand span{display:none}
+  #pointing .sp-pip{width:20px;height:20px;font-size:10px;border-width:2px;border-radius:4px}
+  #pointing .sp-pips{gap:4px}
+  #pointing .sp-scorebox{min-width:0}
+  #pointing .sp-v{font-size:17px}
+  #pointing .sp-tool{width:30px;height:30px;font-size:14px}
+  #pointing .sp-stage{flex-direction:column;gap:10px;padding:10px}
+  #pointing .sp-photo-col{width:100%;flex:0 0 42%}
+  #pointing .sp-photo-box{flex:1;min-height:0}
+  #pointing .sp-frame{width:auto;height:100%}
+  #pointing .sp-info{display:none}
+  #pointing .sp-map-col{flex:1}
+  #pointing .sp-dock{bottom:14px}
+  #pointing .sp-dock .sp-btn{font-size:15px;padding:12px 18px}
+  #pointing .sp-result{bottom:10px;padding:10px 12px 12px}
+  #pointing .sp-rating{font-size:16px}
+  #pointing .sp-pts b{font-size:20px}
+  #pointing .sp-bar{margin:6px 0 10px}
+  #pointing .sp-total b{font-size:40px}
+  #pointing .sp-splash-inner{padding-top:9%;overflow-y:auto;padding-bottom:20px}
+  #pointing .sp-opts{margin-top:14px;padding:10px 10px 8px}
+  #pointing .sp-chip{font-size:12px;padding:6px 9px}
+  #pointing .sp-seg button{font-size:11px;padding:6px 8px}
+  #pointing .sp-seg-l{display:none}
+  #pointing .sp-timer{top:8px;padding:4px 8px}
+  #pointing .sp-timer span{width:60px}
+  #pointing .sp-tagline{font-size:15px}
+}
+@media (max-width:480px){
+  #pointing .sp-hud{gap:6px;padding:6px}
+  #pointing .sp-logo{width:16px;height:24px}
+  #pointing .sp-pips{gap:3px}
+  #pointing .sp-pip{width:17px;height:17px;font-size:9px;border-radius:3px}
+  #pointing .sp-k{font-size:8px}
+  #pointing .sp-v{font-size:15px}
+  #pointing .sp-tools{gap:4px}
+  #pointing .sp-tool{width:27px;height:27px;font-size:13px;border-radius:6px}
+  #pointing .sp-btn-big{font-size:18px;padding:13px 24px}
+  #pointing .sp-card{padding:16px}
+  #pointing .sp-row img{width:38px;height:38px}
+  #pointing .sp-end-btns .sp-btn{font-size:13px;padding:11px 8px}
+}

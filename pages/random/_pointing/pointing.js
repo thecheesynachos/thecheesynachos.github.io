@@ -1,48 +1,40 @@
-// The Singapointing Game — game logic. Expects Leaflet (window.L), text.js, data-photos.js,
-// pixel.js and the #singapointing markup from index.html to be in the document.
+// Pointing games (SingaPointing, Chiang Mai Pointing, ...) — the shared game logic.
+// Expects Leaflet (window.L) and, from the game's own folder, config.js, text.js and
+// data-photos.js, plus pixel.js and the #pointing markup from _includes/pointing-game.html.
 //
-// No wording lives in this file: everything the player reads comes from text.js.
+// Nothing about a particular city lives here: the map area, map styles, scoring and
+// title-screen scene come from the game's config.js, and every word from its text.js.
 "use strict";
 (function () {
 
-const ROUNDS = 5;            // photos per game (fewer if the pool is smaller)
-const MAX_POINTS = 10000;    // the most a single round can be worth
-const FULL_MARKS_KM = 0.05;  // within this distance you get MAX_POINTS
-const DECAY_KM = 3;          // points fall off as exp(-km / DECAY_KM): 1 km≈7200, 5 km≈1900, 10 km≈360
-const MIN_SEP_KM = 2;        // photos in one game are at least this far apart, when the pool allows
+const C = window.POINTING_CONFIG || {};
+const ROUNDS = C.rounds || 5;                  // photos per game (fewer if the pool is smaller)
+const MAX_POINTS = C.maxPoints || 10000;       // the most a single round can be worth
+const FULL_MARKS_KM = C.fullMarksKm || 0.05;   // within this distance you get MAX_POINTS
+const DECAY_KM = C.decayKm || 3;               // points fall off as exp(-km / DECAY_KM)
+const MIN_SEP_KM = C.minSepKm || 2;            // photos in one game are at least this far apart, when the pool allows
+const TIMER_SECONDS = C.timerSeconds || 30;    // "timer" challenge: seconds per photo
+const PEEK_SECONDS = C.peekSeconds || 3;       // "quick look" challenge: the photo hides after this long
 
-// Challenges the player can switch on from the title screen.
-const TIMER_SECONDS = 30;    // "timer" challenge: seconds per photo
-const PEEK_SECONDS = 3;      // "quick look" challenge: the photo hides after this long
-
-// Map styles (picked on the title screen). Any Leaflet-compatible tile URL works.
-const MAPS = {
+// Map styles, in button order; the first is the default. Any Leaflet tile URL works.
+const MAPS = C.maps || {
   streets: {
-    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", maxNativeZoom: 19, line: "#1d1b26",
-    attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  },
-  plain: {     // roads and coastline, no names
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-    maxNativeZoom: 16, line: "#1d1b26", attr: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors"
-  },
-  outline: {   // a flat silhouette of the land (data-land.js), no tiles: no roads, no names
-    land: "data-land.js", maxZoom: 16, line: "#fffdf8",
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", maxNativeZoom: 19,
     attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   },
 };
-const SG_CENTER = [1.3521, 103.8198];
-const SG_ZOOM = 11;
-const SG_BOUNDS = [[1.13, 103.55], [1.50, 104.12]];   // panning is kept inside this box
+const MAP_NAMES = Object.keys(MAPS), DEFAULT_MAP = MAP_NAMES[0];
+const cap = function (k) { return k.charAt(0).toUpperCase() + k.slice(1); };
 
-const BEST_KEY = "singapointingBest";          // + ":t-p-outline" etc. for challenge combos
-const SETTINGS_KEY = "singapointingSettings";
+const BEST_KEY = (C.storageKey || "pointing") + "Best";          // + ":t-p-outline" etc. for challenge combos
+const SETTINGS_KEY = (C.storageKey || "pointing") + "Settings";
 
-const box = document.getElementById("singapointing");
+const box = document.getElementById("pointing");
 const $ = function (id) { return document.getElementById(id); };
 const BASE = box.dataset.base || ".";
 const PX = window.SP_PIXEL;
-const T = window.SINGAPOINTING_TEXT;
-const POOL = (window.SINGAPOINTING_PHOTOS || []).filter(function (p) {
+const T = window.POINTING_TEXT;
+const POOL = (window.POINTING_PHOTOS || []).filter(function (p) {
   return p && p.file && isFinite(p.lat) && isFinite(p.lon);
 });
 
@@ -79,9 +71,15 @@ function tx(path, vars) {
   return String(str).replace(/\{(\w+)\}/g, function (m, k) { return k in vars ? vars[k] : m; });
 }
 // fill every data-txt / data-html / data-tip element in the markup
+// (a string missing from text.js hides its element rather than showing its name)
+function hasTx(path) { return path.split(".").reduce(function (o, k) { return o == null ? o : o[k]; }, T) != null; }
 function applyText() {
-  box.querySelectorAll("[data-txt]").forEach(function (el) { el.textContent = tx(el.dataset.txt); });
-  box.querySelectorAll("[data-html]").forEach(function (el) { el.innerHTML = tx(el.dataset.html); });
+  box.querySelectorAll("[data-txt]").forEach(function (el) {
+    el.textContent = hasTx(el.dataset.txt) ? tx(el.dataset.txt) : ""; if (!hasTx(el.dataset.txt)) show(el, false);
+  });
+  box.querySelectorAll("[data-html]").forEach(function (el) {
+    el.innerHTML = hasTx(el.dataset.html) ? tx(el.dataset.html) : ""; if (!hasTx(el.dataset.html)) show(el, false);
+  });
   box.querySelectorAll("[data-tip]").forEach(function (el) { el.title = tx(el.dataset.tip); });
 }
 function tone(pts) {
@@ -103,16 +101,16 @@ function photoUrl(p) {
 function show(el, on) { el.classList.toggle("sp-hidden", !on); }
 function isOpen(id) { return !$(id).classList.contains("sp-hidden"); }
 /* ---------- challenge settings (remembered in this browser) ---------- */
-const SET = { timer: false, peek: false, map: "streets" };
+const SET = { timer: false, peek: false, map: DEFAULT_MAP };
 try { Object.assign(SET, JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}")); } catch (e) { }
-if (!MAPS[SET.map]) SET.map = "streets";
+if (!MAPS[SET.map]) SET.map = DEFAULT_MAP;
 function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(SET)); } catch (e) { } }
 // each combination of challenges keeps its own best score; plain classic keeps the old key
 function modeKey() {
   const parts = [];
   if (SET.timer) parts.push("t");
   if (SET.peek) parts.push("p");
-  if (SET.map !== "streets") parts.push(SET.map);
+  if (SET.map !== DEFAULT_MAP) parts.push(SET.map);
   return parts.length ? BEST_KEY + ":" + parts.join("-") : BEST_KEY;
 }
 function getBest() { try { return +(localStorage.getItem(modeKey()) || 0); } catch (e) { return 0; } }
@@ -122,8 +120,7 @@ function modeList() {
   const l = [];
   if (SET.timer) l.push(tx("options.timer"));
   if (SET.peek) l.push(tx("options.peek"));
-  if (SET.map === "plain") l.push(tx("options.mapPlain"));
-  if (SET.map === "outline") l.push(tx("options.mapOutline"));
+  if (SET.map !== DEFAULT_MAP) l.push(tx("options.map" + cap(SET.map)));
   return l;
 }
 // count a number up in an element
@@ -144,29 +141,59 @@ function countUp(el, to, ms) {
 }
 
 /* ---------- map ---------- */
+// The area to play in: config.js gives a box, or "auto" to fit whatever the photos cover.
+function photoBounds() {
+  if (POOL.length < 2) return null;
+  const b = L.latLngBounds(POOL.map(function (p) { return [p.lat, p.lon]; }));
+  return b.pad(0.15);
+}
+const AUTO = C.bounds === "auto";
+// the opening view: config's `view` box if given (fits any screen size), else the photos'
+// area when bounds is "auto", else center + zoom
+const HOME_BOUNDS = C.view ? L.latLngBounds(C.view) : AUTO ? photoBounds() : null;
+const MAX_BOUNDS = AUTO ? (HOME_BOUNDS && HOME_BOUNDS.pad(0.6)) : (C.bounds && L.latLngBounds(C.bounds));
 const map = L.map("sp-map", {
-  center: SG_CENTER, zoom: SG_ZOOM, minZoom: 10, maxZoom: 18,
-  maxBounds: SG_BOUNDS, maxBoundsViscosity: 0.8, zoomSnap: 0.5
+  center: C.center || [0, 0], zoom: C.zoom || 11, minZoom: C.minZoom || 3, maxZoom: 18,
+  maxBounds: MAX_BOUNDS || undefined, maxBoundsViscosity: 0.8, zoomSnap: 0.5
 });
+// lockZoomOut: while guessing, you can't zoom out past the opening view (it depends on the
+// screen size, so it's worked out here). Unlocked for the reveal and the review map, so
+// an answer far outside the opening view can still be shown.
+function lockZoom(on) {
+  const z = HOME_BOUNDS ? map.getBoundsZoom(HOME_BOUNDS) : (C.zoom || 11);
+  map.setMinZoom(on && C.lockZoomOut ? z : (C.minZoom || 3));
+}
+function homeView() {
+  lockZoom(true);
+  if (HOME_BOUNDS) map.fitBounds(HOME_BOUNDS, { animate: false });
+  else map.setView(C.center || [0, 0], C.zoom || 11, { animate: false });
+}
+homeView();
 let tiles = null;
-// silhouette colours for the "outline" map (the sea colour is in singapointing.css)
+// A `land` map draws shapes from a data file (window.POINTING_LAND = {name: GeoJSON geometry, ...})
+// instead of, or on top of (when it also has a `url`), map tiles. Its `layers` in config.js
+// give each shape set's Leaflet style, in drawing order; by default it's a land silhouette:
 const LAND_STYLE = {
-  sg:   { stroke: false, fillColor: "#2f2c40", fillOpacity: 1 },   // Singapore
-  near: { stroke: false, fillColor: "#8c93a6", fillOpacity: 1 },   // Malaysia / Indonesia
+  near: { stroke: false, fillColor: "#8c93a6", fillOpacity: 1 },   // the neighbours
+  home: { stroke: false, fillColor: "#2f2c40", fillOpacity: 1 },   // the game's own country / city
 };
 let landLoading = false;
 function landLayer(m) {
   const g = L.layerGroup();
   g.options.attribution = m.attr;   // so the attribution control picks it up
+  if (m.url) L.tileLayer(m.url, { maxZoom: 19, maxNativeZoom: m.maxNativeZoom }).addTo(g);   // a base under the shapes
+  const styles = m.layers || LAND_STYLE;
+  let filled = false;
   g.spFill = function () {
-    const land = window.SINGAPOINTING_LAND;
-    if (!land || g.getLayers().length) return;
+    const land = window.POINTING_LAND;
+    if (!land || filled) return;
+    filled = true;
     const r = L.canvas({ padding: 0.5 });
-    ["near", "sg"].forEach(function (k) {
-      L.geoJSON(land[k], { style: LAND_STYLE[k], renderer: r, interactive: false }).addTo(g);
+    Object.keys(styles).forEach(function (k) {
+      if (land[k]) L.geoJSON(land[k], { style: styles[k], renderer: r, interactive: false }).addTo(g);
     });
   };
-  if (!window.SINGAPOINTING_LAND && !landLoading) {   // fetched the first time someone picks this map
+  if (!window.POINTING_LAND && !landLoading) {   // fetched the first time someone picks this map
     landLoading = true;
     const s = document.createElement("script");
     s.src = BASE + "/" + m.land + (box.dataset.v ? "?v=" + box.dataset.v : "");
@@ -177,12 +204,13 @@ function landLayer(m) {
   return g;
 }
 function setMapStyle(name) {
-  const m = MAPS[name] || MAPS.streets;
+  const m = MAPS[name] || MAPS[DEFAULT_MAP];
   if (tiles) map.removeLayer(tiles);
   tiles = m.land ? landLayer(m)
     : L.tileLayer(m.url, { attribution: m.attr, maxZoom: 19, maxNativeZoom: m.maxNativeZoom });
   tiles.addTo(map);
   map.setMaxZoom(m.maxZoom || 18);   // don't let blurry upscaled tiles be the closest view
+  map.getContainer().style.background = m.bg || "";
   box.dataset.map = name;
 }
 setMapStyle(SET.map);
@@ -263,6 +291,13 @@ function showTitle() {
 }
 
 /* ---------- title-screen challenge toggles ---------- */
+// one button per map style in config.js, labelled from text.js (options.mapStreets, ...)
+MAP_NAMES.forEach(function (k) {
+  const b = document.createElement("button");
+  b.dataset.map = k; b.dataset.txt = "options.map" + cap(k);
+  $("sp-opt-map").appendChild(b);
+});
+if (MAP_NAMES.length < 2) show($("sp-opt-map"), false);
 function renderOptions() {
   $("sp-opt-timer").setAttribute("aria-pressed", SET.timer);
   $("sp-opt-peek").setAttribute("aria-pressed", SET.peek);
@@ -272,8 +307,7 @@ function renderOptions() {
   const d = [];
   if (SET.timer) d.push(tx("options.descTimer"));
   if (SET.peek) d.push(tx("options.descPeek"));
-  if (SET.map === "plain") d.push(tx("options.descPlain"));
-  if (SET.map === "outline") d.push(tx("options.descOutline"));
+  if (SET.map !== DEFAULT_MAP) d.push(tx("options.desc" + cap(SET.map)));
   $("sp-opt-desc").innerHTML = d.length ? d.join(" &middot; ") : tx("options.descNone");
   const best = getBest();
   $("sp-stats").innerHTML = POOL.length
@@ -357,7 +391,7 @@ function startRound() {
   $("sp-guess").textContent = tx("buttons.placePin");
   setTip(tx("info.tipStart"));
   renderPips();
-  map.setView(SG_CENTER, SG_ZOOM, { animate: false });
+  homeView();
 }
 
 map.on("click", function (e) {
@@ -407,12 +441,13 @@ function submitGuess(timedOut) {
     const m = L.marker(a, { icon: spriteIcon("flag"), keyboard: false }).addTo(layer);
     if (p.caption) m.bindTooltip(p.caption, { permanent: true, direction: "top", offset: [8, -48] });
   }
+  lockZoom(false);
   if (G.guess) {
     const g = [G.guess.lat, G.guess.lon];
     map.flyToBounds(L.latLngBounds([g, a]), {
       paddingTopLeft: [50, 70], paddingBottomRight: [50, 230], maxZoom: Math.min(16, map.getMaxZoom()), duration: 0.7
     });
-    drawLine(g, a, (MAPS[SET.map] || MAPS.streets).line, dropFlag);
+    drawLine(g, a, (MAPS[SET.map] || MAPS[DEFAULT_MAP]).line || "#1d1b26", dropFlag);
   } else {
     map.flyTo(a, 14, { duration: 0.7 });
     dropFlag();
@@ -472,6 +507,7 @@ function review() {
   show($("sp-result"), false); show($("sp-dock"), false);
   $("sp-info-round").textContent = tx("info.reviewRound");
   setTip(tx("info.tipReview"));
+  lockZoom(false);
   layer.clearLayers();
   const pts = [];
   G.results.forEach(function (r, k) {
@@ -555,7 +591,10 @@ if (document.body.classList.contains("game-page") && !(box.requestFullscreen || 
   box.querySelectorAll(".sp-fs-btn").forEach(function (b) { b.style.display = "none"; });
 $("sp-fs").onclick = toggleFull;
 $("sp-fs2").onclick = toggleFull;
-window.addEventListener("resize", function () { map.invalidateSize(); scene.resize(); });
+window.addEventListener("resize", function () {
+  map.invalidateSize(); scene.resize();
+  if (G.phase === "guessing") lockZoom(true);   // the opening view's zoom depends on the screen size
+});
 
 document.addEventListener("keydown", function (e) {
   const t = e.target;
@@ -578,12 +617,12 @@ document.addEventListener("keydown", function (e) {
 
 /* ---------- boot ---------- */
 $("sp-logo").src = PX.spriteURL("pin", 2);
-document.querySelectorAll("#singapointing [data-sprite]").forEach(function (im) {
+document.querySelectorAll("#pointing [data-sprite]").forEach(function (im) {
   im.src = PX.spriteURL(im.dataset.sprite, 4);
 });
 $("sp-photo").alt = tx("photo.alt");
 applyText();
-const scene = new PX.Scene($("sp-scene"));
+const scene = new PX.Scene($("sp-scene"), C.scene);
 showTitle();
 
 })();

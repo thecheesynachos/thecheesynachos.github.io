@@ -18,7 +18,7 @@ Thumbs.db
 *.swp
 *~
 # Singapointing original photos (local only; processed copies live in photos/)
-pages/random/singapointing/_photos_raw/
+pages/random/*/_photos_raw/
 
 # Python caches
 __pycache__/
