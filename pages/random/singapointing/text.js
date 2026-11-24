@@ -26,10 +26,15 @@ window.SINGAPOINTING_TEXT = {
     line2: "Pointing",
     sub: "Game",
     tagline: "Where in Singapore was this photo taken?",
+    note: "(and yes, I did take all of the photos you see in the game)",
+    back: "◂ Back to site",          // top-left link back to the Random Stuff page
     play: "▶ Play",
     how: "How to play",
     stats: "{rounds} rounds",               // (html) shown under the buttons
     statsBest: "{rounds} rounds &middot; best {best}",
+    // (html) site-wide page views over the last 30 days, from the visitor counter;
+    // only shown once the counter has loaded
+    visits: "<b>{count}</b> site views this month",
     noPhotos: "No photos yet. Add some to data-photos.js.",
   },
 
@@ -47,7 +52,7 @@ window.SINGAPOINTING_TEXT = {
     descTimer: "{seconds} seconds per photo",
     descPeek: "photo only shown for {peek} seconds",
     descPlain: "where the streets have no name",
-    descOutline: "just the terrain map",
+    descOutline: "just the silhouette",
   },
   timer: {
     tip: "Time left",

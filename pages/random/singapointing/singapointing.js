@@ -25,9 +25,9 @@ const MAPS = {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
     maxNativeZoom: 16, line: "#1d1b26", attr: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors"
   },
-  outline: {   // land, coastline and reservoirs only: no roads, no names
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}",
-    maxNativeZoom: 13, maxZoom: 14, line: "#1d1b26", attr: "Tiles &copy; Esri &mdash; Source: Esri"
+  outline: {   // a flat silhouette of the land (data-land.js), no tiles: no roads, no names
+    land: "data-land.js", maxZoom: 16, line: "#fffdf8",
+    attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   },
 };
 const SG_CENTER = [1.3521, 103.8198];
@@ -149,10 +149,39 @@ const map = L.map("sp-map", {
   maxBounds: SG_BOUNDS, maxBoundsViscosity: 0.8, zoomSnap: 0.5
 });
 let tiles = null;
+// silhouette colours for the "outline" map (the sea colour is in singapointing.css)
+const LAND_STYLE = {
+  sg:   { stroke: false, fillColor: "#2f2c40", fillOpacity: 1 },   // Singapore
+  near: { stroke: false, fillColor: "#8c93a6", fillOpacity: 1 },   // Malaysia / Indonesia
+};
+let landLoading = false;
+function landLayer(m) {
+  const g = L.layerGroup();
+  g.options.attribution = m.attr;   // so the attribution control picks it up
+  g.spFill = function () {
+    const land = window.SINGAPOINTING_LAND;
+    if (!land || g.getLayers().length) return;
+    const r = L.canvas({ padding: 0.5 });
+    ["near", "sg"].forEach(function (k) {
+      L.geoJSON(land[k], { style: LAND_STYLE[k], renderer: r, interactive: false }).addTo(g);
+    });
+  };
+  if (!window.SINGAPOINTING_LAND && !landLoading) {   // fetched the first time someone picks this map
+    landLoading = true;
+    const s = document.createElement("script");
+    s.src = BASE + "/" + m.land;
+    s.onload = function () { if (tiles && tiles.spFill) tiles.spFill(); };
+    document.head.appendChild(s);
+  }
+  g.spFill();
+  return g;
+}
 function setMapStyle(name) {
   const m = MAPS[name] || MAPS.streets;
   if (tiles) map.removeLayer(tiles);
-  tiles = L.tileLayer(m.url, { attribution: m.attr, maxZoom: 19, maxNativeZoom: m.maxNativeZoom }).addTo(map);
+  tiles = m.land ? landLayer(m)
+    : L.tileLayer(m.url, { attribution: m.attr, maxZoom: 19, maxNativeZoom: m.maxNativeZoom });
+  tiles.addTo(map);
   map.setMaxZoom(m.maxZoom || 18);   // don't let blurry upscaled tiles be the closest view
   box.dataset.map = name;
 }
@@ -511,6 +540,19 @@ function toggleFull() {
 function onFsChange() { if (!fsElement() && isFull()) setFull(false); }   // left via Esc / browser UI
 document.addEventListener("fullscreenchange", onFsChange);
 document.addEventListener("webkitfullscreenchange", onFsChange);
+// view count from the site's visitor counter (layout: game reads it from the hidden widget)
+function showVisits(v) {
+  if (!v || !(v.count > 0)) return;
+  $("sp-visits").innerHTML = tx("title.visits", { count: fmtN(v.count) });
+  if (v.range) $("sp-visits").title = v.range;
+  show($("sp-visits"), true);
+}
+if (window.SITE_VISITS) showVisits(window.SITE_VISITS);
+else document.addEventListener("sitevisits", function (e) { showVisits(e.detail); });
+
+// on its own full-window page with no fullscreen support (e.g. iPhone Safari) the buttons would do nothing
+if (document.body.classList.contains("game-page") && !(box.requestFullscreen || box.webkitRequestFullscreen))
+  box.querySelectorAll(".sp-fs-btn").forEach(function (b) { b.style.display = "none"; });
 $("sp-fs").onclick = toggleFull;
 $("sp-fs2").onclick = toggleFull;
 window.addEventListener("resize", function () { map.invalidateSize(); scene.resize(); });

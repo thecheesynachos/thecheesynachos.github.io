@@ -1,12 +1,11 @@
 ---
-layout: page
+layout: game
 title: The SingaPointing Game
 permalink: /random/singapointing/
 redirect_from: /random/singapointer/   # old address keeps working
 sitemap: false
 ---
 
-<p>(and yes, I did take all of the photos you see in the game)</p>
 
 <!--
   The Singapointing Game — look at a photo, point to where in Singapore it was taken.
@@ -16,6 +15,7 @@ sitemap: false
     pixel.js           hand-drawn pixel sprites + the animated title-screen scene
     singapointing.js    game logic (ROUNDS, scoring, map setup live at the top)
     data-photos.js     the photo pool: file + lat/lon for each photo
+    data-land.js       land shapes for the "Outline" map (from OpenStreetMap coastlines; loaded only when picked)
     photos/            the processed photos (square 700px WebP, <=80 KB, metadata stripped)
     _photos_raw/       original photos — local only, gitignored, not published
     _process_photos.py   _photos_raw/ -> photos/ + data-photos.js (crop, shrink, read GPS)
@@ -93,11 +93,13 @@ sitemap: false
   <div class="sp-splash" id="sp-splash">
     <canvas class="sp-scene" id="sp-scene"></canvas>
     <button class="sp-tool sp-fs-btn sp-splash-fs" id="sp-fs2" data-tip="hud.fullscreen">&#9974;</button>
+    <a class="sp-back" href="{{ "/random/" | prepend: site.baseurl }}" data-txt="title.back"></a>
     <div class="sp-splash-inner">
       <div class="sp-kicker" data-txt="title.kicker"></div>
       <h2 class="sp-title"><span data-txt="title.line1"></span><br><span data-txt="title.line2"></span></h2>
       <div class="sp-title-game" data-txt="title.sub"></div>
       <p class="sp-tagline" data-txt="title.tagline"></p>
+      <p class="sp-note" data-txt="title.note"></p>
       <div class="sp-splash-btns">
         <button class="sp-btn sp-btn-go sp-btn-big" id="sp-play" data-txt="title.play"></button>
         <button class="sp-btn sp-btn-ghost" id="sp-how" data-txt="title.how"></button>
@@ -115,12 +117,13 @@ sitemap: false
         <div class="sp-opts-desc" id="sp-opt-desc"></div>
       </div>
       <div class="sp-splash-stats" id="sp-stats"></div>
+      <div class="sp-visits sp-hidden" id="sp-visits"></div>
     </div>
   </div>
 
   <!-- how to play -->
   <div class="sp-overlay sp-hidden" id="sp-help">
-    <div class="sp-card">
+    <div class="sp-card sp-card-help">
       <h3 class="sp-card-title" data-txt="help.title"></h3>
       <ol class="sp-steps">
         <li><img data-sprite="camera" alt=""><div data-html="help.step1"></div></li>

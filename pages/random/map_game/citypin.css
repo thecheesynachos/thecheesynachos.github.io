@@ -11,6 +11,12 @@
     font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     font-weight:400;-webkit-tap-highlight-color:transparent;user-select:none}
   #citypin.full{position:fixed;inset:0;z-index:9999;height:auto;min-height:0;border-radius:0;border:0}
+  /* on its own full-window page (layout: game) the game is the whole page */
+  body.game-page #citypin{position:fixed;inset:0;height:auto;min-height:0;border-radius:0;border:0}
+  #citypin .back-link{position:absolute;top:14px;left:14px;z-index:1;padding:8px 14px;font-size:13px;line-height:1.2;
+    color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;text-decoration:none}
+  #citypin .back-link:hover{border-color:var(--accent);color:var(--ink);text-decoration:none}
+  body:not(.game-page) #citypin .back-link{display:none}
   #citypin *{box-sizing:border-box}
   #citypin button{font:inherit;font-weight:400;color:var(--ink);background:var(--panel2);
     border:1px solid var(--line);border-radius:8px;padding:8px 16px;cursor:pointer;margin:0;
@@ -30,7 +36,9 @@
   #citypin .stat{text-align:right;min-width:58px}
   #citypin .stat .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
   #citypin .stat .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-  #citypin #fsBtn{padding:6px 10px;font-size:15px;line-height:1}
+  #citypin #fsBtn,#citypin #homeBtn{padding:6px 10px;font-size:15px;line-height:1}
+  #citypin #homeBtn{font-size:18px;padding:4px 10px 6px}
+  #citypin .card-small{max-width:360px;text-align:center}
 
   #citypin #wrap{position:relative;flex:1;min-height:0}
   #citypin #map{position:absolute;inset:0;width:100%;height:100%;display:block;
@@ -77,6 +85,9 @@
   #citypin td.n{text-align:right;font-variant-numeric:tabular-nums}
   #citypin .foot-note{font-size:11.5px;color:#6b7a8d;margin-top:14px;line-height:1.5}
   #citypin .foot-note a{color:#8fa3ba;text-decoration:underline}
+  #citypin .visits{margin-top:10px;font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+  #citypin .visits::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;
+    vertical-align:1px;background:var(--good);box-shadow:0 0 0 3px rgba(61,220,151,.18)}
   #citypin .hidden{display:none!important}
   @media (max-width:520px){
     #citypin{height:min(92vh,820px)}

@@ -23,7 +23,8 @@ window.CITYPIN_TEXT = {
     roundLabel: "Round",
     scoreLabel: "Score",
     roundCounter: "{n}/{rounds}",
-    fullscreen: "Fullscreen (Esc to exit)",   // tooltips
+    home: "Home (back to the start)",         // tooltips
+    fullscreen: "Fullscreen (Esc to exit)",
     zoomIn: "Zoom in",
     zoomOut: "Zoom out",
     resetView: "Reset view",
@@ -40,8 +41,17 @@ window.CITYPIN_TEXT = {
     km: "{n} km"
   },
 
+  // --- "leave this game?" card, from the Home button mid-game ---
+  leave: {
+    title: "Leave this game?",
+    text: "Your score so far won't be saved.",
+    stay: "Keep playing",
+    go: "Leave"
+  },
+
   // --- the opening card ---
   start: {
+    back: "← Back to site",     // top-left button on the opening screen, back to the Random Stuff page
     title: "The Map Game",
     blurb: "I give you a city name, you locate it on the map. {perRound} points a round, {total} in all. Easy.",
 
@@ -62,6 +72,9 @@ window.CITYPIN_TEXT = {
     ],
 
     play: "Play",
+    // site-wide page views over the last 30 days, from the visitor counter;
+    // only shown once the counter has loaded
+    visits: "{count} site views this month",
     // This one is HTML, so it can carry a link.
     credits: 'Drag to pan, scroll or pinch to zoom. Everything runs offline in your browser.<br>' +
       'City data © <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> ' +

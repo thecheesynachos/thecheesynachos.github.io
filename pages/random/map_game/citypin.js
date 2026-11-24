@@ -474,11 +474,23 @@ $("zin").onclick = function () { zoomAt(W / 2, H / 2, 1.8); };
 $("zout").onclick = function () { zoomAt(W / 2, H / 2, 1 / 1.8); };
 $("zres").onclick = function () { view.zoom = 1; view.clon = 0; view.clat = 0; clampView(); draw(); };
 
+const FS_REQ = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
 $("fsBtn").onclick = function () {
+  // on its own full-window page the game already fills the window, so this goes
+  // properly fullscreen instead (hides the browser bars too)
+  if (document.body.classList.contains("game-page") && FS_REQ) {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    const fn = fsEl ? (document.exitFullscreen || document.webkitExitFullscreen) : FS_REQ;
+    try { const p = fn.call(fsEl ? document : document.documentElement); if (p && p.catch) p.catch(function () { }); } catch (e) { }
+    return;
+  }
   box.classList.toggle("full");
   document.body.style.overflow = box.classList.contains("full") ? "hidden" : "";
   resize();
 };
+
+// no fullscreen support (e.g. iPhone Safari) and already full-window: the button has nothing to do
+if (document.body.classList.contains("game-page") && !FS_REQ) $("fsBtn").style.display = "none";
 
 $("actionBtn").onclick = function () {
   if (G.phase === "guess") { if (G.guess) submitGuess(); }
@@ -489,10 +501,11 @@ $("actionBtn").onclick = function () {
 };
 
 document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && leaveOpen()) { $("leaveScreen").classList.add("hidden"); return; }
   if (e.key === "Escape" && box.classList.contains("full")) { $("fsBtn").onclick(); return; }
   const active = box.classList.contains("full") || box.contains(document.activeElement) ||
     (box.matches && box.matches(":hover"));
-  if (!active) return;
+  if (!active || leaveOpen()) return;
   if (e.key === "Enter" || e.key === " ") {
     if (G.phase === "start") { e.preventDefault(); startGame(); }
     else if (G.phase === "final") { e.preventDefault(); startGame(); }
@@ -575,6 +588,39 @@ $("changeBtn").onclick = function () {
   $("startScreen").classList.remove("hidden");
   G.phase = "start";
 };
+
+// Home: back to the start card. Mid-game it asks first, since the score is lost.
+function goHome() {
+  ["endScreen", "leaveScreen"].forEach(function (id) { $(id).classList.add("hidden"); });
+  $("startScreen").classList.remove("hidden");
+  G.phase = "start"; G.guess = null; G.city = null; G.idx = 0; G.total = 0;
+  $("city").textContent = T.ui.cityPlaceholder;
+  $("roundN").textContent = fmt(T.ui.roundCounter, { n: 1, rounds: ROUNDS });
+  $("scoreN").textContent = "0";
+  $("actionBtn").textContent = T.ui.guess;
+  $("actionBtn").disabled = true;
+  setVerdict(T.ui.pickPrompt);
+  view.zoom = 1; view.clon = 0; view.clat = 0; clampView();
+  draw();
+}
+function leaveOpen() { return !$("leaveScreen").classList.contains("hidden"); }
+$("homeBtn").onclick = function () {
+  if (G.phase === "guess" || G.phase === "result") $("leaveScreen").classList.remove("hidden");
+  else goHome();
+};
+$("leaveGo").onclick = goHome;
+$("leaveStay").onclick = function () { $("leaveScreen").classList.add("hidden"); };
+$("leaveScreen").onclick = function (e) { if (e.target === this) this.classList.add("hidden"); };
+
+// view count from the site's visitor counter (layout: game reads it from the hidden widget)
+function showVisits(v) {
+  if (!v || !(v.count > 0)) return;
+  $("visits").textContent = fmt(T.start.visits, { count: v.count.toLocaleString() });
+  if (v.range) $("visits").title = v.range;
+  $("visits").classList.remove("hidden");
+}
+if (window.SITE_VISITS) showVisits(window.SITE_VISITS);
+else document.addEventListener("sitevisits", function (e) { showVisits(e.detail); });
 
 window.addEventListener("resize", resize);
 if (window.ResizeObserver) new ResizeObserver(resize).observe(cv);

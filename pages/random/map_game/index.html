@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: game
 title: City Pin
 permalink: /random/map_game/
 sitemap: false
@@ -31,6 +31,7 @@ sitemap: false
   </div>
   <div class="stat"><div class="v" id="roundN"></div><div class="k" data-txt="ui.roundLabel"></div></div>
   <div class="stat"><div class="v" id="scoreN">0</div><div class="k" data-txt="ui.scoreLabel"></div></div>
+  <button id="homeBtn" data-txt="ui.home" data-attr="title">&#8962;</button>
   <button id="fsBtn" data-txt="ui.fullscreen" data-attr="title">&#9974;</button>
 </div>
 
@@ -45,6 +46,7 @@ sitemap: false
 
   <!-- start -->
   <div class="screen" id="startScreen">
+    <a class="back-link" href="{{ "/random/" | prepend: site.baseurl }}" data-txt="start.back"></a>
     <div class="card">
       <h1 data-txt="start.title"></h1>
       <p data-txt="start.blurb"></p>
@@ -54,6 +56,19 @@ sitemap: false
       <div class="opts" id="bordOpts"></div>
       <button class="primary" id="playBtn" data-txt="start.play" style="width:100%;padding:12px"></button>
       <div class="foot-note" data-txt="start.credits" data-html></div>
+      <div class="visits hidden" id="visits"></div>
+    </div>
+  </div>
+
+  <!-- "leave this game?" (Home button mid-game) -->
+  <div class="screen hidden" id="leaveScreen">
+    <div class="card card-small">
+      <h2 data-txt="leave.title"></h2>
+      <p data-txt="leave.text"></p>
+      <div style="display:flex;gap:8px">
+        <button id="leaveGo" data-txt="leave.go" style="flex:1;padding:11px"></button>
+        <button class="primary" id="leaveStay" data-txt="leave.stay" style="flex:1;padding:11px"></button>
+      </div>
     </div>
   </div>
 
