@@ -20,11 +20,11 @@ window.POINTING_CONFIG = {
 
   // the map. All photos are in and around the city (within ~9 km of Tha Phae Gate); the
   // opening view is their area plus a little margin. `view` is also the game's photo
-  // area: _process_photos.py skips any photo taken outside it (Chiang Dao, Mae Kampong, ...),
+  // area: _process_photos.py only sends this game photos taken inside it (not Chiang Dao, Mae Kampong, ...),
   // so widening it lets more photos in.
-  view: [[18.710, 98.897], [18.840, 99.022]],   // opening view, fitted to the screen whatever its size; also the photo area
+  view: [[18.705, 98.897], [18.860, 99.045]],   // opening view, fitted to the screen whatever its size; also the photo area
   lockZoomOut: true,                            // while guessing, no zooming out past the opening view
-  bounds: [[18.66, 98.86], [18.88, 99.07]],     // panning is kept inside this box (the view + a few km)
+  bounds: [[18.66, 98.86], [18.90, 99.09]],     // panning is kept inside this box (the view + a few km)
   center: [18.7728, 98.9615],                   // (only used if `view` is removed)
   zoom: 13,
   minZoom: 11,

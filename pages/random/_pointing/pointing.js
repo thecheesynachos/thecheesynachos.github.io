@@ -31,6 +31,11 @@ const SETTINGS_KEY = (C.storageKey || "pointing") + "Settings";
 
 const box = document.getElementById("pointing");
 const $ = function (id) { return document.getElementById(id); };
+
+// no right-click menu or image dragging anywhere in the game, so the photos aren't one
+// "Save image as..." away (long-press saving on phones is blocked in pointing.css)
+box.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+box.addEventListener("dragstart", function (e) { if (e.target.tagName === "IMG") e.preventDefault(); });
 const BASE = box.dataset.base || ".";
 const PX = window.SP_PIXEL;
 const T = window.POINTING_TEXT;
@@ -216,13 +221,16 @@ function setMapStyle(name) {
 setMapStyle(SET.map);
 const layer = L.layerGroup().addTo(map);   // everything drawn per round
 
-// a pixel sprite as a map marker; anchored at the pin tip / bottom of the flag pole
+// a pixel sprite as a map marker; anchored at the pin tip / bottom of the flag pole.
+// `s` = screen px per sprite pixel (the answer flag a bit smaller than the guess pin);
+// the image is drawn at 2s so each sprite pixel is whole device pixels on retina screens.
+const MARKER_SCALE = { flag: 2.5 };
 function spriteIcon(name, label) {
-  const sz = PX.spriteSize(name), s = 3, w = sz[0] * s, h = sz[1] * s;
+  const sz = PX.spriteSize(name), s = MARKER_SCALE[name] || 3, w = sz[0] * s, h = sz[1] * s;
   const anchor = name === "flag" ? [Math.round(1.5 * s), h] : [Math.round(w / 2), h];
   return L.divIcon({
     className: "sp-pin", iconSize: [w, h], iconAnchor: anchor,
-    html: '<img src="' + PX.spriteURL(name, 4) + '" alt="">' + (label ? '<span class="sp-pin-n">' + label + "</span>" : "")
+    html: '<img src="' + PX.spriteURL(name, Math.round(2 * s)) + '" alt="">' + (label ? '<span class="sp-pin-n">' + label + "</span>" : "")
   });
 }
 

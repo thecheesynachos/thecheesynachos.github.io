@@ -23,7 +23,8 @@ body.game-page #pointing{position:fixed;inset:0;width:auto;height:auto;min-heigh
 /* neutralise the site's typography inside the game */
 #pointing h2,#pointing h3,#pointing p,#pointing ol,#pointing li{margin:0;padding:0}
 #pointing ol{list-style:none}
-#pointing img{max-width:none;vertical-align:top;border:0}
+#pointing img{max-width:none;vertical-align:top;border:0;
+  -webkit-user-select:none;user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
 #pointing .sp-hidden{display:none!important}
 
 /* ---------- buttons ---------- */

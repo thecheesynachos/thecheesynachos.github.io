@@ -78,8 +78,7 @@
   <h2>Biggest gaps</h2>
   <label class="chk"><input type="checkbox" id="mainOnly" checked> Main island only</label>
   <ol id="gaps"></ol>
-  <p class="note">Land spots farthest from any photo, at least 3 km apart. Click one to zoom there.
-    Some will still be places you can't get into (Tuas port, Lim Chu Kang army land, the airport).</p>
+  <p class="note" id="gapNote">Spots farthest from any photo, at least 3 km apart. Click one to zoom there.</p>
 </div>
 <div id="map"></div>
 
@@ -188,10 +187,12 @@ function buildCells() {
   cells = [];
   for (let lat = AREA[0][0]; lat < AREA[1][0]; lat += latStep) {
     for (let lon = AREA[0][1]; lon < AREA[1][1]; lon += lonStep) {
-      const c = { lat: lat + latStep / 2, lon: lon + lonStep / 2 };
-      const count = PHOTOS.filter(p => p.lat >= lat && p.lat < lat + latStep && p.lon >= lon && p.lon < lon + lonStep).length;
+      // the last row / column is cut off at the area's edge
+      const top = Math.min(lat + latStep, AREA[1][0]), right = Math.min(lon + lonStep, AREA[1][1]);
+      const c = { lat: (lat + top) / 2, lon: (lon + right) / 2 };
+      const count = PHOTOS.filter(p => p.lat >= lat && p.lat <= top && p.lon >= lon && p.lon <= right).length;
       if (!count && !onLand(c.lat, c.lon)) continue;   // sea, and nothing there
-      cells.push({ b: [[lat, lon], [lat + latStep, lon + lonStep]], c, count, gap: nearest(c) });
+      cells.push({ b: [[lat, lon], [top, right]], c, count, gap: nearest(c) });
     }
   }
 }
@@ -252,6 +253,8 @@ toggle("showRings", ringLayer);
 document.getElementById("mainOnly").onchange = drawGaps;
 
 if (!SG) document.getElementById("mainOnly").parentNode.style.display = "none";   // no land shapes: nothing to filter by
+if (GAME === "singapointing") document.getElementById("gapNote").textContent +=
+  " Some will still be places you can't get into (Tuas port, Lim Chu Kang army land, the airport).";
 document.querySelector("h1").textContent = "Photo coverage";
 document.getElementById("ringLabel").textContent = (CFG.minSepKm || 2) + " km rings";
 document.querySelectorAll("#games button").forEach(b => {   // switch game: reload with ?game=

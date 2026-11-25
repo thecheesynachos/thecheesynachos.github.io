@@ -17,7 +17,7 @@ Thumbs.db
 .vscode/
 *.swp
 *~
-# Singapointing original photos (local only; processed copies live in photos/)
+# Pointing games: original photos (local only; processed copies live in each game's photos/)
 pages/random/*/_photos_raw/
 
 # Python caches

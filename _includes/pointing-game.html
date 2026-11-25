@@ -7,7 +7,8 @@
     text.js            EVERY piece of wording the game shows
     data-photos.js     the photo pool: file + lat/lon per photo (written by _process_photos.py)
     photos/            the processed photos (square 700px WebP, <=80 KB, metadata stripped)
-    _photos_raw/       original photos: local only, gitignored, not published
+    (originals go in pages/random/_pointing/_photos_raw/, shared by all the games:
+     _process_photos.py sorts them into each game by GPS. Local only, not published)
     data-land.js       (optional) land shapes for a silhouette map
 
   The shared engine lives in pages/random/_pointing/: pointing.js (game logic),
