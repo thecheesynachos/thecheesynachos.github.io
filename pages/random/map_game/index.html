@@ -1,63 +1,134 @@
 ---
 layout: game
-title: City Pin
+title: The Map Game
 permalink: /random/map_game/
 sitemap: false
 ---
 <!--
-  City Pin — a self-contained city-guessing game. Everything it needs lives in this
-  folder and loads from this site; there are no external requests and no API calls.
+  The Map Game — a self-contained city-guessing game. Everything it needs lives in this
+  folder and loads from this site; there are no API calls. The one outside request is
+  the pixel font (Silkscreen, Google Fonts) — without it the game falls back to a
+  monospace font and still works.
 
     citypin.css      styles (all scoped to #citypin)
     text.js          every word the game shows — edit copy there, not here
     data-map.js      encoded Natural Earth country outlines
     data-cities.js   encoded GeoNames city pool
-    citypin.js       game logic
+    citypin.js       game logic, plus the game settings (rounds, timer, levels) at the top
 
   The sibling files have no front matter, so Jekyll copies them verbatim to
   /pages/random/map_game/ — hence the absolute paths below rather than relative ones
   (this page itself is served from /random/map_game/ via the permalink above).
   If you move this folder, update the four paths and the permalink together.
+
+  Wording: elements with data-txt are filled from text.js (data-html = as HTML,
+  data-attr = into that attribute instead). Elements with an id are filled by the game.
 -->
 {% assign cp = "/pages/random/map_game" | prepend: site.baseurl %}
 {% assign v = site.time | date: '%s' %}{% comment %} build time: changes every deploy, so browsers fetch fresh copies of the files below instead of mixing cached old ones with the new page {% endcomment %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
 <link rel="stylesheet" href="{{ cp }}/citypin.css?v={{ v }}">
 
 <div id="citypin">
 
+<!-- top bar -->
 <div id="bar">
   <div id="prompt">
     <div class="lbl" data-txt="ui.findThisCity"></div>
     <div id="city"></div>
   </div>
-  <div class="stat"><div class="v" id="roundN"></div><div class="k" data-txt="ui.roundLabel"></div></div>
-  <div class="stat"><div class="v" id="scoreN">0</div><div class="k" data-txt="ui.scoreLabel"></div></div>
-  <button id="homeBtn" data-txt="ui.home" data-attr="title">&#8962;</button>
-  <button id="fsBtn" data-txt="ui.fullscreen" data-attr="title">&#9974;</button>
+  <div id="track">
+    <div id="lvlBox" class="hidden">
+      <div class="lvl-badge"><span data-txt="levels.short"></span><b id="lvlN">1</b></div>
+      <div class="lvl-prog">
+        <div class="lvl-nums"><b id="lvlPts">0</b><span id="lvlTarget"></span></div>
+        <div class="meter"><i id="lvlFill"></i></div>
+      </div>
+    </div>
+    <div id="pips"></div>
+  </div>
+  <div class="stat"><div class="k" data-txt="ui.scoreLabel"></div><div class="v" id="scoreN">0</div></div>
+  <div class="tools">
+    <button class="tool" id="homeBtn" data-txt="ui.home" data-attr="title">&#8962;</button>
+    <button class="tool" id="fsBtn" data-txt="ui.fullscreen" data-attr="title">&#9974;</button>
+  </div>
 </div>
 
+<!-- map + everything that floats over it -->
 <div id="wrap">
   <canvas id="map"></canvas>
   <div id="zoombtns">
-    <button id="zin" data-txt="ui.zoomIn" data-attr="title">+</button>
-    <button id="zout" data-txt="ui.zoomOut" data-attr="title">−</button>
-    <button id="zres" data-txt="ui.resetView" data-attr="title" style="font-size:13px">⤢</button>
+    <button class="tool" id="zin" data-txt="ui.zoomIn" data-attr="title">+</button>
+    <button class="tool" id="zout" data-txt="ui.zoomOut" data-attr="title">−</button>
+    <button class="tool" id="zres" data-txt="ui.resetView" data-attr="title">⤢</button>
   </div>
+  <div id="timer" class="hidden"><b id="timerN"></b><span><i id="timerBar"></i></span></div>
   <div id="hint"></div>
 
-  <!-- start -->
-  <div class="screen" id="startScreen">
+  <div id="dock" class="hidden">
+    <button class="btn primary" id="guessBtn" disabled></button>
+  </div>
+
+  <!-- the card after each guess -->
+  <div id="result" class="hidden">
+    <div class="res-top">
+      <div class="res-l">
+        <div class="res-rate" id="resRate"></div>
+        <div class="res-dist" id="resDist"></div>
+      </div>
+      <div class="res-pts"><b id="resPts">0</b><span id="resOutOf"></span></div>
+    </div>
+    <div class="meter big"><i id="resFill"></i></div>
+    <div class="res-note" id="resNote"></div>
+    <button class="btn primary wide" id="nextBtn"></button>
+  </div>
+
+  <!-- title screen -->
+  <div class="screen title" id="startScreen">
     <a class="back-link" href="{{ "/random/" | prepend: site.baseurl }}" data-txt="start.back"></a>
-    <div class="card">
-      <h1 data-txt="start.title"></h1>
-      <p data-txt="start.blurb"></p>
-      <div class="optlbl" data-txt="start.poolLabel"></div>
-      <div class="opts" id="diffOpts"></div>
-      <div class="optlbl" data-txt="start.mapLabel"></div>
-      <div class="opts" id="bordOpts"></div>
-      <button class="primary" id="playBtn" data-txt="start.play" style="width:100%;padding:12px"></button>
+    <div class="title-inner">
+      <div class="kicker" data-txt="start.kicker"></div>
+      <h1 class="big-title" data-txt="start.title"></h1>
+      <p class="tagline" data-txt="start.blurb"></p>
+
+      <div class="panel">
+        <div class="optlbl" data-txt="start.modeLabel"></div>
+        <div class="opts modes" id="modeOpts"></div>
+
+        <div id="poolRow">
+          <div class="optlbl" data-txt="start.poolLabel"></div>
+          <div class="opts seg3" id="diffOpts"></div>
+        </div>
+        <div id="levelsRow" class="hidden">
+          <div class="optlbl" data-txt="start.levelsLabel"></div>
+          <div class="ladder" id="ladder"></div>
+        </div>
+
+        <div class="opt-cols">
+          <div><div class="optlbl" data-txt="start.mapLabel"></div><div class="opts seg" id="bordOpts"></div></div>
+          <div><div class="optlbl" data-txt="start.clockLabel"></div><div class="opts seg" id="timeOpts"></div></div>
+        </div>
+
+        <button class="btn primary big wide" id="playBtn" data-txt="start.play"></button>
+        <div class="best-line" id="bestLine"></div>
+      </div>
+
       <div class="foot-note" data-txt="start.credits" data-html></div>
       <div class="visits hidden" id="visits"></div>
+    </div>
+  </div>
+
+  <!-- level intro / level cleared -->
+  <div class="screen hidden" id="levelScreen">
+    <div class="card card-level">
+      <div class="confetti" id="confetti"></div>
+      <div class="lvl-cleared hidden" id="lvlCleared"></div>
+      <div class="kicker-sm" id="lvlKicker"></div>
+      <div class="lvl-big" id="lvlBig"></div>
+      <div class="lvl-pool" id="lvlPool"></div>
+      <div class="lvl-goal" id="lvlGoal"></div>
+      <div class="lvl-steps" id="lvlSteps"></div>
+      <button class="btn primary big wide" id="lvlGo"></button>
     </div>
   </div>
 
@@ -66,33 +137,29 @@ sitemap: false
     <div class="card card-small">
       <h2 data-txt="leave.title"></h2>
       <p data-txt="leave.text"></p>
-      <div style="display:flex;gap:8px">
-        <button id="leaveGo" data-txt="leave.go" style="flex:1;padding:11px"></button>
-        <button class="primary" id="leaveStay" data-txt="leave.stay" style="flex:1;padding:11px"></button>
+      <div class="btn-row">
+        <button class="btn" id="leaveGo" data-txt="leave.go"></button>
+        <button class="btn primary" id="leaveStay" data-txt="leave.stay"></button>
       </div>
     </div>
   </div>
 
   <!-- final -->
   <div class="screen hidden" id="endScreen">
-    <div class="card">
-      <h2 data-txt="end.title"></h2>
-      <div class="total"><b id="endTotal">0</b> <span data-txt="end.outOf"></span></div>
-      <p id="endMsg" style="margin-top:10px"></p>
-      <table><thead><tr id="endHead"></tr></thead>
-        <tbody id="endRows"></tbody></table>
-      <div style="display:flex;gap:8px">
-        <button class="primary" id="againBtn" data-txt="end.playAgain" style="flex:1;padding:11px"></button>
-        <button id="changeBtn" data-txt="end.changeDifficulty" style="flex:1;padding:11px"></button>
+    <div class="card card-end">
+      <div class="confetti" id="confetti2"></div>
+      <div class="kicker-sm" id="endKicker"></div>
+      <div class="total"><b id="endTotal">0</b><span id="endOutOf"></span></div>
+      <div class="end-msg" id="endMsg"></div>
+      <div class="end-sub" id="endSub"></div>
+      <div class="best-note" id="bestNote"></div>
+      <div class="rows" id="endRows"></div>
+      <div class="btn-row">
+        <button class="btn primary" id="againBtn" data-txt="end.playAgain"></button>
+        <button class="btn" id="changeBtn" data-txt="end.changeDifficulty"></button>
       </div>
-      <div class="foot-note" id="bestNote"></div>
     </div>
   </div>
-</div>
-
-<div id="foot">
-  <div id="verdict"></div>
-  <button id="actionBtn" class="primary" disabled></button>
 </div>
 
 </div>
